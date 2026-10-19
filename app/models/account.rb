@@ -1,8 +1,10 @@
 class Account < ApplicationRecord
-  PROVIDERS = %w[pipedrive].freeze
+  PROVIDERS = %w[pipedrive google].freeze
   FAILURE_GRACE_PERIOD = 1.hour
 
+  # Pipedrive: the API token; Google: the OAuth refresh token
   encrypts :api_token
+  encrypts :access_token
 
   has_many :connections, dependent: :destroy
 
