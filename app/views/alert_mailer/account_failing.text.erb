@@ -1,0 +1,7 @@
+Bonjour,
+
+Depuis le <%= l(@account.failing_since, format: :long) %>, la passerelle entre <%= @account.provider.capitalize %> (« <%= @account.name %> ») et RDV Service Public n'arrive plus à lire les agendas.
+
+Erreur : <%= @account.last_error %>
+
+Tant que ce problème n'est pas résolu, les créneaux proposés dans RDV Service Public ne tiennent plus compte des nouvelles activités <%= @account.provider.capitalize %>, et les nouveaux rendez-vous n'y apparaissent plus. Si la clé d'API a été révoquée ou renouvelée, merci de nous transmettre la nouvelle.
