@@ -21,6 +21,8 @@ module Connections
     private
 
     def provider_user_name
+      return unless @account.provider == "pipedrive"
+
       Pipedrive::Client.new(@account.api_token).users.find { it["id"].to_s == @provider_user_id }&.dig("name")
     rescue Pipedrive::Error
       nil

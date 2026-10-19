@@ -93,7 +93,7 @@ module Caldav
     end
 
     def display_name
-      ["Pipedrive", @connection.provider_user_name.presence].compact.join(" – ")
+      [@connection.account.provider.capitalize, @connection.provider_user_name.presence].compact.join(" – ")
     end
   end
 end
