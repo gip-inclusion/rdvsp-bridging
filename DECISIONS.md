@@ -86,3 +86,18 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
     providers now share the CalDAV core, sync tokens, mirror, jobs and admin; worth formalising only if a third
     one (Salesforce) shows the same shape.
 24. **(me)** `.ruby-version` holds `4.0.7` (not `ruby-4.0.7`) so rbenv users aren't stuck; rv reads both.
+
+## For tomorrow
+
+- **Deploy inputs needed**: Scaleway project + container namespace + registry, Managed PostgreSQL, a domain
+  (e.g. `bridges.inclusion.gouv.fr`), TEM credentials for alerts, optionally a Sentry DSN. Steps in
+  `docs/deploy-scaleway.md`. Build with `--platform linux/amd64`.
+- **Webhooks** were not tested live (they need the public HTTPS URL): onboard the sandbox again after deploy, then
+  delete a meeting in Pipedrive and watch its busy block disappear without waiting for the hourly rebuild.
+- **Real RDV-SP**: an agent account with opening hours on the target instance, then the 3-step setup in
+  `docs/deploy-scaleway.md` §4. Your local `rdv-service-public` checkout (July branch) predates `CaldavConfig`.
+- **Pipedrive sandbox state**: activity type "RDV Service Public" (created by onboarding), person "Jeanne Dupont"
+  (Person-linking test), activity #3 "RDV Accueil" on Oct 22 (left so you can see what an RDV looks like),
+  meetings #2 (Oct 20) and #5 (Oct 21) used as busy times. Rotate the API token after the pilot.
+- **Not done**: Pipedrive OAuth private app (next milestone), Google live test (needs an OAuth client), rate limiting
+  of CalDAV Basic auth, per-admin accounts/audit on `/admin` (single shared password today).
