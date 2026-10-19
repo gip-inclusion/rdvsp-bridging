@@ -11,6 +11,7 @@ AllCops:
     - "db/migrate/*good_job*.rb"
     - "tmp/**/*"
     - "log/**/*"
+    - "script/e2e/**/*" # runs inside an RDV-SP checkout
   NewCops: enable
   SuggestExtensions: false
 

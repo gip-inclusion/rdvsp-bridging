@@ -22,7 +22,8 @@ class RdvspEmulator
   def configure!(agenda_url)
     @agenda_url = agenda_url
     client.principal_url
-    client.calendars.find(agenda_url)
+    raise "sync-token required by RDV-SP" if client.calendars.find(agenda_url, sync: true).sync_token.blank?
+
     uuid = SecureRandom.uuid
     test_event = client.events.create(agenda_url, "rdvsp-connection-test-#{uuid}.ics", ics(uid: uuid, summary: "Test"))
     client.events.delete(test_event.url)

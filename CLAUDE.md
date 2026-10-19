@@ -22,13 +22,15 @@ Partner users must still be RDV-SP agents with opening hours defined in RDV-SP: 
 
 ## The CalDAV client we must satisfy (Calendav gem 0.6, used by RDV-SP)
 
-Exact requests, verified by reading the gem and RDV-SP code. **Any change here must keep them working**
+Exact requests, verified by reading the gem and RDV-SP code (`production` branch, Oct 2026: settings live in a
+`CaldavConfig` model, sync runs are logged in `ExternalCalendarSyncExecution`, see `script/e2e/`). **Any change here must keep them working**
 (`spec/integration/calendav_compatibility_spec.rb` drives the real gem against the app).
 
 1. `PROPFIND` Depth 0 on the configured URL (the calendar URL itself) for `current-user-principal`.
 2. `PROPFIND` on the principal for `calendar-home-set`, then Depth 1 on the home: keeps resources whose `resourcetype`
    contains `caldav:calendar` and whose `supported-calendar-component-set` includes `VEVENT`.
-3. `PROPFIND` Depth 0 on the agenda (`calendars.find`, with `sync-token` on first import).
+3. `PROPFIND` Depth 0 on the agenda (`calendars.find(url, sync: true)`): the connection check **refuses servers
+   without a `sync-token`**. The calendar's `displayname` and `calendar-color` are stored by RDV-SP.
 4. Connection test: `PUT <agenda>/rdvsp-connection-test-<uuid>.ics` then `DELETE` it. Never forwarded to providers.
 5. First import: `REPORT calendar-query` Depth 1. Next imports: `REPORT sync-collection` with the stored token.
    RDV-SP **ignores 507/pagination and does not recover from sync errors** → never fail a sync-token, never paginate.
@@ -67,6 +69,7 @@ Ruby runs through `rv run …` (the Makefile does it for you; `RUN=` to bypass).
 
 ## Conventions (aligned with rdv-insertion and rdv-service-public)
 
+- Puma must accept WebDAV methods (`supported_http_methods` in `config/puma.rb`), otherwise `PROPFIND` gets a 501.
 - RSpec + FactoryBot; RuboCop with rubocop-rails and rubocop-rspec (`.rubocop.yml`); `make lint` must pass.
 - Double quotes, 120 columns, no `frozen_string_literal` magic comment.
 - Lean models and controllers, concerns and POROs for domain logic, service objects (`BaseService`, `.call`,
