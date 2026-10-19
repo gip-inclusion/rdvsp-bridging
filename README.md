@@ -1,24 +1,18 @@
-# README
+# rdvsp-bridges
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Lets people whose calendar lives in a third-party system (Pipedrive first) use **RDV Service Public** both ways —
+their busy times block slots in RDV-SP, and RDVs booked in RDV-SP show up in their tool — **without any change to
+RDV-SP**: the bridge impersonates the CalDAV server RDV-SP already knows how to sync with.
 
-Things you may want to cover:
+- How it works and conventions: [`CLAUDE.md`](CLAUDE.md)
+- Decision log: [`DECISIONS.md`](DECISIONS.md)
+- Deployment: [`docs/deploy-scaleway.md`](docs/deploy-scaleway.md)
+- End-to-end test with a real RDV-SP: [`script/e2e/`](script/e2e/README.md)
 
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+```bash
+cp .env.example .env   # then fill the encryption keys (bin/rails db:encryption:init)
+make install
+make run               # http://localhost:3010/admin (admin / admin in development)
+make test
+make lint
+```

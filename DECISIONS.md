@@ -74,3 +74,7 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
     controller check, import/export jobs and slot calculator (`script/e2e/`). Note: on `production`, CalDAV settings
     moved to a `CaldavConfig` model and the connection check now **requires a `sync-token`** — your local checkout
     (branch `online-booking-email-sans-confirmation`, July) predates that.
+21. **(me)** Configuration is env-only (no `credentials.yml.enc`, removed): simpler on Scaleway. `/up` is excluded
+    from the SSL redirect; test gems are left out of the image. Sentry never sends request bodies
+    (`send_default_pii = false`). Production image verified locally (boot, migrations, cron, WebDAV methods).
+    Build with `--platform linux/amd64` for Scaleway.
