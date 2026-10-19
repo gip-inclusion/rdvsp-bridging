@@ -44,7 +44,8 @@ class RdvContent
     paragraphs = ["Rendez-vous pris sur RDV Service Public."]
     links.each do |link|
       url = ERB::Util.h(link[:url])
-      paragraphs << %(Pour voir, déplacer ou annuler ce rendez-vous sur #{ERB::Util.h(link[:name])} : <a href="#{url}">#{url}</a>)
+      name = ERB::Util.h(link[:name])
+      paragraphs << %(Pour voir, déplacer ou annuler ce rendez-vous sur #{name} : <a href="#{url}">#{url}</a>)
     end
     paragraphs << NOTICE
     paragraphs << ERB::Util.h(details).gsub("\n", "<br>") if details
