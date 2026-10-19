@@ -1,0 +1,8 @@
+<h1>Connecter un utilisateur de <%= @account.name %></h1>
+<%= form_with url: admin_account_connections_path(@account) do |f| %>
+  <label>Utilisateur Pipedrive
+    <%= f.select :provider_user_id, @users.map { [ "#{it['name']} (#{it['email']})", it["id"] ] } %>
+  </label>
+  <label>E-mail de l’agent dans RDV Service Public <%= f.email_field :agent_email, size: 40 %></label>
+  <%= f.submit "Créer les identifiants CalDAV" %>
+<% end %>

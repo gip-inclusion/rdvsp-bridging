@@ -1,0 +1,7 @@
+<h1>Connecter un compte Pipedrive</h1>
+<p>Clé d’API d’un administrateur de l’entreprise (Pipedrive → Préférences personnelles → API).</p>
+<%= form_with url: admin_accounts_path do |f| %>
+  <label>Clé d’API <%= f.password_field :api_token, required: true, size: 50 %></label>
+  <label>E-mail de l’administrateur côté partenaire (alertes) <%= f.email_field :alert_email, size: 40 %></label>
+  <%= f.submit "Connecter" %>
+<% end %>

@@ -1,0 +1,13 @@
+<h1>Comptes</h1>
+<p><%= link_to "Connecter un compte Pipedrive", new_admin_account_path %></p>
+<table>
+  <tr><th>Compte</th><th>État</th><th>Dernière lecture</th><th>Connexions</th></tr>
+  <% @accounts.each do |account| %>
+    <tr>
+      <td><%= link_to account.name, admin_account_path(account) %> <span class="muted"><%= account.provider %></span></td>
+      <td><%= render "admin/accounts/status", account: %></td>
+      <td><%= account.refreshed_at ? "il y a #{time_ago_in_words(account.refreshed_at)}" : "jamais" %></td>
+      <td><%= account.connections.size %></td>
+    </tr>
+  <% end %>
+</table>

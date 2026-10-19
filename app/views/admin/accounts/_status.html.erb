@@ -1,0 +1,6 @@
+<% if account.failing? %>
+  <span class="ko">En erreur depuis <%= l(account.failing_since, format: :short) %></span>
+  <br><span class="muted"><%= account.last_error %></span>
+<% else %>
+  <span class="ok">OK</span>
+<% end %>

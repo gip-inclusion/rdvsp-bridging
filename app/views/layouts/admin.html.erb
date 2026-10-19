@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <title>rdvsp-bridges · admin</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 960px; margin: 2rem auto; padding: 0 1rem; color: #161616; }
+      a { color: #000091; }
+      table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+      th, td { text-align: left; padding: .4rem .6rem; border-bottom: 1px solid #ddd; vertical-align: top; }
+      .ok { color: #18753c; } .ko { color: #ce0500; } .muted { color: #666; }
+      .flash { padding: .6rem 1rem; background: #e8edff; } .flash.alert { background: #ffe9e9; }
+      code, pre { background: #f6f6f6; padding: .1rem .3rem; } pre { padding: 1rem; overflow-x: auto; }
+      form.inline { display: inline; } label { display: block; margin: .6rem 0; }
+    </style>
+  </head>
+  <body>
+    <p><a href="<%= admin_root_path %>">rdvsp-bridges</a></p>
+    <% flash.each do |type, message| %>
+      <% next if type == "password" %>
+      <p class="flash <%= type %>"><%= message %></p>
+    <% end %>
+    <%= yield %>
+  </body>
+</html>
