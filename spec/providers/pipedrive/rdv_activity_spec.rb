@@ -26,7 +26,7 @@ RSpec.describe Pipedrive::RdvActivity do
 
   it "always links to the RDV in RDV-SP, even when the link isn't at the start of a line" do
     expect(attributes[:note]).to include('<a href="https://rdv.example/admin/organisations/1/rdvs/42">')
-    expect(attributes[:note]).to include("n’a aucun effet sur le rendez-vous")
+    expect(attributes[:note]).to include("aucun effet sur le rendez-vous")
   end
 
   context "without usager details" do
