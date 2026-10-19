@@ -1,5 +1,8 @@
 <h1>Comptes</h1>
-<p><%= link_to "Connecter un compte Pipedrive", new_admin_account_path %></p>
+<p>
+  <%= link_to "Connecter un compte Pipedrive", new_admin_account_path %>
+  <% if Google::Oauth.configured? %> · <%= link_to "Connecter un agenda Google", admin_google_connect_path %><% end %>
+</p>
 <table>
   <tr><th>Compte</th><th>État</th><th>Dernière lecture</th><th>Connexions</th></tr>
   <% @accounts.each do |account| %>

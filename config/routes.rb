@@ -12,6 +12,8 @@ Rails.application.routes.draw do
 
   namespace :admin do
     root "accounts#index"
+    get "google/connect" => "google#connect", as: :google_connect
+    get "google/callback" => "google#callback", as: :google_callback
     resources :accounts, only: %i[index show new create update] do
       resources :connections, only: %i[new create]
     end

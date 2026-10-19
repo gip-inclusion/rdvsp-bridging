@@ -1,23 +1,31 @@
 <h1><%= @account.name %></h1>
 <p><%= render "admin/accounts/status", account: @account %></p>
-<p class="muted">
-  Pipedrive <code><%= @account.provider_company_domain %></code> ·
-  type d’activité <code><%= @account.rdv_activity_type_key || "meeting" %></code> ·
-  webhook <%= @account.provider_webhook_id ? "actif" : "non configuré (passerelle non publique)" %>
-</p>
+<% if @account.provider == "pipedrive" %>
+  <p class="muted">
+    Pipedrive <code><%= @account.provider_company_domain %></code> ·
+    type d’activité <code><%= @account.rdv_activity_type_key || "meeting" %></code> ·
+    webhook <%= @account.provider_webhook_id ? "actif" : "non configuré (passerelle non publique)" %>
+  </p>
+<% else %>
+  <p class="muted"><%= @account.provider.capitalize %></p>
+<% end %>
 
 <h2>Options</h2>
 <%= form_with model: @account, url: admin_account_path(@account) do |f| %>
   <label><%= f.check_box :usager_details %> Transmettre les données de l’usager (titre, description, lieu) telles que RDV-SP les envoie</label>
-  <label><%= f.check_box :link_persons %> Rattacher les rendez-vous à une Personne Pipedrive (nécessite l’option précédente)</label>
+  <% if @account.provider == "pipedrive" %>
+    <label><%= f.check_box :link_persons %> Rattacher les rendez-vous à une Personne Pipedrive (nécessite l’option précédente)</label>
+  <% end %>
   <label>E-mail d’alerte <%= f.email_field :alert_email, size: 40 %></label>
   <%= f.submit "Enregistrer" %>
 <% end %>
 
 <h2>Connexions</h2>
-<p><%= link_to "Connecter un utilisateur Pipedrive", new_admin_account_connection_path(@account) %></p>
+<% if @account.provider == "pipedrive" %>
+  <p><%= link_to "Connecter un utilisateur Pipedrive", new_admin_account_connection_path(@account) %></p>
+<% end %>
 <table>
-  <tr><th>Utilisateur Pipedrive</th><th>Agent RDV-SP</th><th>Dernier passage de RDV-SP</th><th>Occupations</th></tr>
+  <tr><th>Utilisateur / agenda</th><th>Agent RDV-SP</th><th>Dernier passage de RDV-SP</th><th>Occupations</th></tr>
   <% @account.connections.each do |connection| %>
     <tr>
       <td><%= link_to connection.provider_user_name || connection.provider_user_id, admin_connection_path(connection) %></td>
