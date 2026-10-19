@@ -60,6 +60,7 @@ RSpec/DescribeClass:
   Exclude:
     - "spec/requests/**/*"
     - "spec/integration/**/*"
+    - "spec/providers/google/sync_spec.rb"
 RSpec/ExampleLength:
   Enabled: false
 RSpec/LetSetup:
