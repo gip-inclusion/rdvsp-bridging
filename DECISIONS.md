@@ -78,3 +78,11 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
     from the SSL redirect; test gems are left out of the image. Sentry never sends request bodies
     (`send_default_pii = false`). Production image verified locally (boot, migrations, cron, WebDAV methods).
     Build with `--platform linux/amd64` for Scaleway.
+22. **(you → me)** Google spike done as a **second provider** (Calendar REST API + OAuth) rather than a CalDAV
+    passthrough: no XML rewriting, and RDV-SP only ever sees start/end times. Specs only (no OAuth client yet):
+    see `docs/google.md` for the 10-minute setup to try it live. Deletions via `updatedMin` + `showDeleted`.
+23. **(me)** Provider "interface" is still a convention, not a class hierarchy: `Providers` dispatches to
+    `<Provider>::RefreshAccount`, `RebuildConnection`, `PushRdv`; content rules shared in `RdvContent`. Two
+    providers now share the CalDAV core, sync tokens, mirror, jobs and admin; worth formalising only if a third
+    one (Salesforce) shows the same shape.
+24. **(me)** `.ruby-version` holds `4.0.7` (not `ruby-4.0.7`) so rbenv users aren't stuck; rv reads both.

@@ -49,7 +49,9 @@ Exact requests, verified by reading the gem and RDV-SP code (`production` branch
 - `Rdv`: an RDV pushed by RDV-SP (keyed by connection + href), written to the provider asynchronously.
 - `app/caldav/`: provider-agnostic CalDAV server (XML parsing/rendering, ICS in/out).
 - `app/providers/pipedrive/`: API client, activity → busy block mapping, RDV → activity writer, webhooks.
-- No generic provider interface yet: extract it when a second provider exists.
+- `app/providers/google/`: spike, Calendar REST API + OAuth (`docs/google.md`).
+- `Providers` dispatches by convention to `<Provider>::RefreshAccount`, `RebuildConnection`, `PushRdv`;
+  `RdvContent` holds the provider-agnostic rules about what an RDV may reveal.
 
 See `DECISIONS.md` for the decision log (read it before changing behaviour).
 
