@@ -1,0 +1,103 @@
+# Adapted from rdv-service-public and rdv-insertion
+plugins:
+  - rubocop-rails
+  - rubocop-rspec
+
+AllCops:
+  Exclude:
+    - "vendor/bundle/**/*"
+    - "bin/*"
+    - "db/schema.rb"
+    - "db/migrate/*good_job*.rb"
+    - "tmp/**/*"
+    - "log/**/*"
+  NewCops: enable
+  SuggestExtensions: false
+
+Layout/LineLength:
+  Max: 120
+
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+
+Lint/MissingSuper:
+  Exclude:
+    - "app/services/**/*" # Inheriting BaseService without calling super is OK.
+    - "app/providers/**/*"
+
+# Metrics cops don't provide an explicit way to improve code.
+Metrics/AbcSize:
+  Enabled: false
+Metrics/BlockLength:
+  Enabled: false
+Metrics/ClassLength:
+  Enabled: false
+Metrics/CyclomaticComplexity:
+  Enabled: false
+Metrics/MethodLength:
+  Enabled: false
+Metrics/ModuleLength:
+  Enabled: false
+Metrics/ParameterLists:
+  Enabled: false
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+Naming/VariableNumber:
+  Enabled: false
+
+Rails/I18nLocaleTexts:
+  Enabled: false
+Rails/SkipsModelValidations:
+  Enabled: false
+Rails/ThreeStateBooleanColumn:
+  Enabled: false
+
+RSpec/ContextWording:
+  Enabled: false
+RSpec/DescribeClass:
+  Exclude:
+    - "spec/requests/**/*"
+    - "spec/integration/**/*"
+RSpec/ExampleLength:
+  Enabled: false
+RSpec/LetSetup:
+  Enabled: false
+RSpec/MessageSpies:
+  Enabled: false
+RSpec/MultipleExpectations:
+  Enabled: false
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
+RSpec/NamedSubject:
+  Enabled: false
+RSpec/NestedGroups:
+  Max: 5
+
+Style/AsciiComments:
+  Enabled: false
+Style/ClassAndModuleChildren:
+  Enabled: false
+Style/Documentation:
+  Enabled: false
+Style/FetchEnvVar:
+  Enabled: false
+Style/OneClassPerFile:
+  Exclude:
+    - "app/services/base_service.rb"
+Style/OpenStructUse:
+  Enabled: false
+Style/FrozenStringLiteralComment:
+  EnforcedStyle: never
+Style/GuardClause:
+  Enabled: false
+Style/HashSyntax:
+  Enabled: false
+Style/IfUnlessModifier:
+  Enabled: false
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: consistent_comma
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: consistent_comma
