@@ -3,7 +3,7 @@ module Pipedrive
   # identify the usager is sent: RDV-SP's non-sensitive summary ("RDV <motif>"), the RDV-SP links and visio URLs only.
   class RdvActivity
     DEFAULT_SUBJECT = "RDV Service Public".freeze
-    RDVSP_LINK = /^Voir sur (?<name>[^:\n]+): (?<url>https?:\S+)$/
+    RDVSP_LINK = /Voir sur (?<name>[^:\n]+): (?<url>https?:\S+)/
 
     def initialize(rdv, person_id: nil)
       @rdv = rdv
