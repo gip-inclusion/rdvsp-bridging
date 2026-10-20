@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -66,7 +67,7 @@ jobs:
   # (same set as plateforme-accueil: SCW_ACCESS_KEY, SCW_SECRET_KEY, SCW_ORG_ID, SCW_PROJECT_ID, SCW_REGISTRY).
   deploy:
     needs: [lint, test]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
       SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
