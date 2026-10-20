@@ -6,7 +6,7 @@ RDV-SP**: the bridge impersonates the CalDAV server RDV-SP already knows how to 
 
 - How it works and conventions: [`CLAUDE.md`](CLAUDE.md)
 - Decision log: [`DECISIONS.md`](DECISIONS.md)
-- Deployment: [`docs/deploy-scaleway.md`](docs/deploy-scaleway.md)
+- Deployment: [`docs/deploy-scaleway.md`](docs/deploy-scaleway.md) — running at https://novarw2u9ckv-rdvsp-bridging.functions.fnc.fr-par.scw.cloud
 - End-to-end test with a real RDV-SP: [`script/e2e/`](script/e2e/README.md)
 
 ```bash

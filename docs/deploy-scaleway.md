@@ -1,5 +1,22 @@
 # Deploying on Scaleway
 
+## Current deployment (2026-10-20)
+
+- Project **nova**, Serverless Container **`rdvsp-bridging`** in namespace `nova` (1 instance, 1 GB, 560 mVCPU,
+  HTTPS only, startup/liveness probes on `/up`).
+- URL: <https://novarw2u9ckv-rdvsp-bridging.functions.fnc.fr-par.scw.cloud> (no custom domain yet).
+- Image: `rg.fr-par.scw.cloud/nova-container-registry/rdvsp-bridging:latest`.
+- Database `rdvsp_bridging` (user `rdvsp_bridging`, `permission=all` on that database only) on the shared
+  **`proto-db`** instance (PostgreSQL 16).
+- Secrets are Scaleway *secret* environment variables; the only other copy is the git-ignored `.env.scaleway` on
+  Louis-Jean's machine (keep it somewhere safe: the encryption keys can't be recovered from Scaleway).
+- Deploys: `make deploy` locally (`scw registry login`, `SCW_REGISTRY=rg.fr-par.scw.cloud/nova-container-registry`), or
+  the CI `deploy` job on every push to `main` once the repository has `SCW_ACCESS_KEY` / `SCW_SECRET_KEY`
+  (`SCW_ORG_ID`, `SCW_PROJECT_ID`, `SCW_REGISTRY` are already set).
+- No e-mail yet (no TEM domain in nova): alerts are only logged until `SMTP_*` and `ALERT_EMAIL` are set.
+
+The rest of this page is the generic procedure.
+
 Target (decided 2026-10-19): **Serverless Container** (min 1 instance: Pipedrive webhooks and the GoodJob cron run
 in the web process) + **Managed Database for PostgreSQL**. Everything is configured through environment variables.
 
@@ -22,7 +39,7 @@ docker push rg.fr-par.scw.cloud/<namespace>/rdvsp-bridging:<tag>
 
 ## 3. Container
 
-- Port: `3000` (or set `PORT`), min scale **1**, max scale 1 for now (GoodJob runs in-process; more instances are
+- Port: `8080` (Scaleway sets `PORT`, which is reserved), min scale **1**, max scale 1 for now (GoodJob runs in-process; more instances are
   fine for jobs but not needed).
 - Health check: `GET /up`.
 - Custom domain with HTTPS (e.g. `rdvsp-bridging.inclusion.gouv.fr`). TLS ends at Scaleway; the app assumes SSL.

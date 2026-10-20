@@ -101,3 +101,18 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
   meetings #2 (Oct 20) and #5 (Oct 21) used as busy times. Rotate the API token after the pilot.
 - **Not done**: Pipedrive OAuth private app (next milestone), Google live test (needs an OAuth client), rate limiting
   of CalDAV Basic auth, per-admin accounts/audit on `/admin` (single shared password today).
+
+## Deployment (2026-10-20)
+
+25. **(you)** Renamed to **rdvsp-bridging**; repository `gip-inclusion/rdvsp-bridging`, **public** like 82 of the
+    org's 87 repos, after a gitleaks scan of the whole history (no findings) and manual checks for the tokens and
+    keys used during development.
+26. **(you → me)** Deployed in **nova**: Serverless Container + database on the shared `proto-db` instance (details in
+    `docs/deploy-scaleway.md`). Verified in production: RDV-SP's connection check, initial and incremental sync,
+    Pipedrive **webhooks** (a deleted meeting disappears within 20 s), RDV export to Pipedrive.
+27. **(me)** CI (lint: RuboCop, Brakeman, bundler-audit; test: RSpec on Postgres 17) and a `deploy` job on `main`
+    gated on lint + test, skipped while the Scaleway key pair isn't set. Dependabot (bundler, docker, actions;
+    daily, grouped, 5-day cooldown) as in plateforme-accueil, with auto-merge (squash) for non-major updates.
+28. **Blocked, for you**: enabling "Allow auto-merge" and protecting `main` with the `lint` and `test` required
+    checks (my permissions refused repo-settings changes). Without both, Dependabot's auto-merge cannot be enabled.
+    Also: add `SCW_ACCESS_KEY` / `SCW_SECRET_KEY` (the CLI here can't create IAM keys), a custom domain, TEM.
