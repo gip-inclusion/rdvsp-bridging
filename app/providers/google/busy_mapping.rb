@@ -3,7 +3,7 @@ module Google
   class BusyMapping
     IGNORED_TYPES = %w[workingLocation birthday].freeze
     ALL_DAY_TIME_ZONE = "Europe/Paris".freeze
-    RDV_PROPERTY = "rdvsp_bridges_rdv".freeze
+    RDV_PROPERTY = "rdvsp_bridging_rdv".freeze
 
     def initialize(connection)
       @connection = connection

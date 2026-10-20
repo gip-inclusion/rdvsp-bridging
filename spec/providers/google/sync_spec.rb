@@ -41,7 +41,7 @@ RSpec.describe "Google provider", :google do
     it "inserts a minimal, opaque event tagged as ours" do
       insert = stub_request(:post, events_url).with(body: hash_including(
         "summary" => "RDV Service Public", "transparency" => "opaque",
-        "extendedProperties" => { "private" => { "rdvsp_bridges_rdv" => rdv.href_name } }
+        "extendedProperties" => { "private" => { "rdvsp_bridging_rdv" => rdv.href_name } }
       )).to_return_json(body: { id: "evt1" })
 
       described_class.call(rdv:)

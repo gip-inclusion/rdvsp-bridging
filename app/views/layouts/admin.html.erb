@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
   <head>
-    <title>rdvsp-bridges · admin</title>
+    <title>rdvsp-bridging · admin</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <style>
@@ -16,7 +16,7 @@
     </style>
   </head>
   <body>
-    <p><a href="<%= admin_root_path %>">rdvsp-bridges</a></p>
+    <p><a href="<%= admin_root_path %>">rdvsp-bridging</a></p>
     <% flash.each do |type, message| %>
       <% next if type == "password" %>
       <p class="flash <%= type %>"><%= message %></p>

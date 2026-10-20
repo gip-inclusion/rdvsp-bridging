@@ -90,7 +90,7 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
 ## For tomorrow
 
 - **Deploy inputs needed**: Scaleway project + container namespace + registry, Managed PostgreSQL, a domain
-  (e.g. `bridges.inclusion.gouv.fr`), TEM credentials for alerts, optionally a Sentry DSN. Steps in
+  (e.g. `rdvsp-bridging.inclusion.gouv.fr`), TEM credentials for alerts, optionally a Sentry DSN. Steps in
   `docs/deploy-scaleway.md`. Build with `--platform linux/amd64`.
 - **Webhooks** were not tested live (they need the public HTTPS URL): onboard the sandbox again after deploy, then
   delete a meeting in Pipedrive and watch its busy block disappear without waiting for the hourly rebuild.

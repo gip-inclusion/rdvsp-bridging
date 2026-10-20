@@ -5,7 +5,7 @@
 module SyncCollection
   extend ActiveSupport::Concern
 
-  TOKEN_PREFIX = "urn:rdvsp-bridges:sync:".freeze
+  TOKEN_PREFIX = "urn:rdvsp-bridging:sync:".freeze
   TOMBSTONE_RETENTION = 90.days
 
   Changes = Data.define(:updated, :deleted, :token)

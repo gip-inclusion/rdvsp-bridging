@@ -15,7 +15,7 @@ RSpec.describe Google::BusyMapping do
       { "status" => "cancelled" },
       { "eventType" => "workingLocation" },
       { "attendees" => [{ "self" => true, "responseStatus" => "declined" }] },
-      { "extendedProperties" => { "private" => { "rdvsp_bridges_rdv" => "x.ics" } } },
+      { "extendedProperties" => { "private" => { "rdvsp_bridging_rdv" => "x.ics" } } },
     ].each { |change| expect(mapping.times_for(google_event(id: "a", **change.symbolize_keys))).to be_nil }
   end
 

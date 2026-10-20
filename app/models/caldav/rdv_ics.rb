@@ -3,7 +3,7 @@ module Caldav
   module RdvIcs
     def self.render(rdv)
       calendar = Icalendar::Calendar.new
-      calendar.prodid = "-//rdvsp-bridges//FR"
+      calendar.prodid = "-//rdvsp-bridging//FR"
       calendar.event do |event|
         event.uid = rdv.uid.presence || rdv.href_name.delete_suffix(".ics")
         event.dtstamp = Icalendar::Values::DateTime.new(rdv.updated_at.utc)

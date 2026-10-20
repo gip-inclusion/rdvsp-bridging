@@ -6,8 +6,8 @@ in the web process) + **Managed Database for PostgreSQL**. Everything is configu
 ## 1. Database
 
 - Create a Managed PostgreSQL instance (PostgreSQL 16 or 17, smallest node is plenty) and a database
-  `rdvsp_bridges`.
-- `DATABASE_URL=postgres://USER:PASSWORD@HOST:PORT/rdvsp_bridges?sslmode=require`
+  `rdvsp_bridging`.
+- `DATABASE_URL=postgres://USER:PASSWORD@HOST:PORT/rdvsp_bridging?sslmode=require`
 - Migrations run at container start (`bin/docker-entrypoint` → `db:prepare`).
 
 ## 2. Image
@@ -15,9 +15,9 @@ in the web process) + **Managed Database for PostgreSQL**. Everything is configu
 Serverless Containers run **linux/amd64**:
 
 ```bash
-docker build --platform linux/amd64 -t rg.fr-par.scw.cloud/<namespace>/rdvsp-bridges:$(git rev-parse --short HEAD) .
+docker build --platform linux/amd64 -t rg.fr-par.scw.cloud/<namespace>/rdvsp-bridging:$(git rev-parse --short HEAD) .
 docker login rg.fr-par.scw.cloud -u nologin --password-stdin <<< "$SCW_SECRET_KEY"
-docker push rg.fr-par.scw.cloud/<namespace>/rdvsp-bridges:<tag>
+docker push rg.fr-par.scw.cloud/<namespace>/rdvsp-bridging:<tag>
 ```
 
 ## 3. Container
@@ -25,7 +25,7 @@ docker push rg.fr-par.scw.cloud/<namespace>/rdvsp-bridges:<tag>
 - Port: `3000` (or set `PORT`), min scale **1**, max scale 1 for now (GoodJob runs in-process; more instances are
   fine for jobs but not needed).
 - Health check: `GET /up`.
-- Custom domain with HTTPS (e.g. `bridges.inclusion.gouv.fr`). TLS ends at Scaleway; the app assumes SSL.
+- Custom domain with HTTPS (e.g. `rdvsp-bridging.inclusion.gouv.fr`). TLS ends at Scaleway; the app assumes SSL.
 
 ### Environment variables
 

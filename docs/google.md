@@ -15,7 +15,7 @@ reach RDV-SP (a passthrough would hand RDV-SP every event's title and descriptio
   timed (all-day only with the connection's toggle). Recurring events are expanded by Google (`singleEvents`).
 - Incremental refresh with `updatedMin` + `showDeleted` (deletions arrive as `status: cancelled`), hourly rebuild of
   the 6-month window, same cron as Pipedrive. No push notifications (watch channels) yet.
-- RDVs become opaque events tagged with a private extended property (`rdvsp_bridges_rdv`), excluded from busy times.
+- RDVs become opaque events tagged with a private extended property (`rdvsp_bridging_rdv`), excluded from busy times.
   Same content rules as Pipedrive (`RdvContent`).
 
 ## Trying it live

@@ -51,7 +51,7 @@ class CaldavController < ActionController::API
 
   def authenticate
     @connection = authenticate_with_http_basic { |username, password| Connection.authenticate(username, password) }
-    return request_http_basic_authentication("rdvsp-bridges") if @connection.nil?
+    return request_http_basic_authentication("rdvsp-bridging") if @connection.nil?
     return head :not_found if @connection.public_id != params[:public_id]
 
     @connection.touch_last_seen!

@@ -1,4 +1,4 @@
-namespace :bridges do
+namespace :bridging do
   namespace :pipedrive do
     desc "Create or update a Pipedrive account from an admin API token"
     task :onboard, %i[api_token alert_email] => :environment do |_task, args|

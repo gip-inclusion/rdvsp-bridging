@@ -26,7 +26,7 @@ module Caldav
     def home
       principal_props.merge(
         RESOURCETYPE => ->(xml) { xml["d"].collection },
-        prop(DAV, "displayname") => text("rdvsp-bridges")
+        prop(DAV, "displayname") => text("rdvsp-bridging")
       )
     end
 

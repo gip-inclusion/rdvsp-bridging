@@ -6,7 +6,7 @@ Petit message pour vous prévenir d’une expérimentation qui utilise la synchr
 sans modification de votre code.
 
 **Contexte** : certains partenaires gèrent leur agenda dans un CRM (Pipedrive pour commencer, peut-être Salesforce
-ensuite) et non dans un agenda CalDAV. Nous avons développé une petite passerelle, *rdvsp-bridges*, qui se présente à
+ensuite) et non dans un agenda CalDAV. Nous avons développé une petite passerelle, *rdvsp-bridging*, qui se présente à
 RDV Service Public comme un serveur CalDAV : l’agent saisit l’URL, l’identifiant et le mot de passe fournis par la
 passerelle dans « Synchronisation d’agenda → Connecter mon agenda via Caldav ».
 

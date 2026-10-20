@@ -1,4 +1,4 @@
-# rdvsp-bridges
+# rdvsp-bridging
 
 Lets people whose calendar lives in a third-party system (Pipedrive first) use **RDV Service Public** both ways —
 their busy times block slots in RDV-SP, and RDVs booked in RDV-SP show up in their tool — **without any change to

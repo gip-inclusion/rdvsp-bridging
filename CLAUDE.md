@@ -4,7 +4,7 @@ Guidance for working in this repository.
 
 ## What this is
 
-**rdvsp-bridges** lets people whose calendar lives in a third-party system (first: the Pipedrive CRM; later maybe
+**rdvsp-bridging** lets people whose calendar lives in a third-party system (first: the Pipedrive CRM; later maybe
 Salesforce, Google, Microsoft) use **RDV Service Public** (RDV-SP, `../rdv-service-public`) bidirectionally:
 
 - their busy times in the provider block slots in RDV-SP;
@@ -63,8 +63,8 @@ make run          # app on http://localhost:3010 (GoodJob runs in-process)
 make test         # rspec
 make lint         # rubocop + brakeman
 make autocorrect  # rubocop -A
-bin/rails "bridges:pipedrive:onboard[TOKEN]"    # create an account from a Pipedrive API token
-bin/rails "bridges:connection:create[ACCOUNT_ID,PIPEDRIVE_USER_ID,agent@example.fr]"
+bin/rails "bridging:pipedrive:onboard[TOKEN]"    # create an account from a Pipedrive API token
+bin/rails "bridging:connection:create[ACCOUNT_ID,PIPEDRIVE_USER_ID,agent@example.fr]"
 ```
 
 Ruby runs through `rv run …` (the Makefile does it for you; `RUN=` to bypass).
