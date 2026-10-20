@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: RuboCop
+        run: bundle exec rubocop
+
+      - name: Brakeman
+        run: bundle exec brakeman --quiet --no-pager
+
+      - name: Bundler audit
+        run: bundle exec bundler-audit check --update
+
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      RAILS_ENV: test
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Prepare database
+        run: bin/rails db:prepare
+
+      - name: RSpec
+        run: bundle exec rspec
+
+  # Deploys main once lint and tests pass. Skipped until the Scaleway secrets are set on the repository
+  # (same set as plateforme-accueil: SCW_ACCESS_KEY, SCW_SECRET_KEY, SCW_ORG_ID, SCW_PROJECT_ID, SCW_REGISTRY).
+  deploy:
+    needs: [lint, test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+      SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+      SCW_REGISTRY: ${{ secrets.SCW_REGISTRY }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check Scaleway credentials
+        id: credentials
+        run: |
+          if [ -z "$SCW_SECRET_KEY" ] || [ -z "$SCW_REGISTRY" ]; then
+            echo "Scaleway secrets absent: deploy skipped."
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Scaleway CLI
+        if: steps.credentials.outputs.present == 'true'
+        run: |
+          SCW_URL=$(curl -fsSL https://api.github.com/repos/scaleway/scaleway-cli/releases/latest | grep -o 'https://[^"]*linux_amd64' | head -1)
+          curl -fsSL "$SCW_URL" -o /usr/local/bin/scw
+          chmod +x /usr/local/bin/scw
+
+      - name: Configure Scaleway CLI
+        if: steps.credentials.outputs.present == 'true'
+        run: |
+          scw init secret-key="$SCW_SECRET_KEY" access-key="$SCW_ACCESS_KEY" \
+            organization-id="${{ secrets.SCW_ORG_ID }}" \
+            project-id="${{ secrets.SCW_PROJECT_ID }}" \
+            send-telemetry=false with-ssh-key=false install-autocomplete=false
+
+      - name: Login to Scaleway container registry
+        if: steps.credentials.outputs.present == 'true'
+        run: docker login "${SCW_REGISTRY%%/*}" -u nologin --password-stdin <<< "$SCW_SECRET_KEY"
+
+      - name: Build, push and redeploy
+        if: steps.credentials.outputs.present == 'true'
+        run: make deploy
