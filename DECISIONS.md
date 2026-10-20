@@ -113,6 +113,7 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
 27. **(me)** CI (lint: RuboCop, Brakeman, bundler-audit; test: RSpec on Postgres 17) and a `deploy` job on `main`
     gated on lint + test, skipped while the Scaleway key pair isn't set. Dependabot (bundler, docker, actions;
     daily, grouped, 5-day cooldown) as in plateforme-accueil, with auto-merge (squash) for non-major updates.
-28. **Blocked, for you**: enabling "Allow auto-merge" and protecting `main` with the `lint` and `test` required
-    checks (my permissions refused repo-settings changes). Without both, Dependabot's auto-merge cannot be enabled.
-    Also: add `SCW_ACCESS_KEY` / `SCW_SECRET_KEY` (the CLI here can't create IAM keys), a custom domain, TEM.
+28. **(you)** "Allow auto-merge" and branch protection on `main` (required checks `lint` and `test`) enabled by hand,
+    since my permissions refused repo-settings changes. Still to do: `SCW_ACCESS_KEY` / `SCW_SECRET_KEY` repository
+    secrets (the CLI here can't create IAM keys), a custom domain, TEM for alert e-mails, and optionally secret
+    scanning + push protection + Dependabot security updates (free on public repos, currently off).
