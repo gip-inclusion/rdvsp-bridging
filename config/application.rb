@@ -53,5 +53,8 @@ module RdvspBridging
     config.active_record.encryption.key_derivation_salt = ENV["ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT"]
 
     config.i18n.default_locale = :fr
+
+    # Public URL of the bridge, for the CalDAV URLs, webhooks and OAuth redirects (never the request's Host header)
+    config.x.base_url = ENV.fetch("BRIDGE_BASE_URL", "http://localhost:3010").delete_suffix("/")
   end
 end

@@ -6,3 +6,6 @@
 Rails.application.config.filter_parameters += %i[
   passw email secret token _key crypt salt certificate otp ssn cvv cvc
 ]
+
+# Pipedrive webhooks carry the activity (subject, note, participants) in `data` and `previous`
+Rails.application.config.filter_parameters += [/\A(data|previous)\z/]

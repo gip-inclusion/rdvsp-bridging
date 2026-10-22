@@ -51,7 +51,7 @@ docker push rg.fr-par.scw.cloud/<namespace>/rdvsp-bridging:<tag>
 | `DATABASE_URL` | see above |
 | `SECRET_KEY_BASE` | `openssl rand -hex 64` |
 | `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY`, `..._DETERMINISTIC_KEY`, `..._KEY_DERIVATION_SALT` | `bin/rails db:encryption:init`; **losing them loses every stored Pipedrive token** |
-| `BRIDGE_BASE_URL` | public `https://…` URL; enables Pipedrive webhook subscription at onboarding |
+| `BRIDGE_BASE_URL` | public `https://…` URL; the only host accepted in production, the base of every URL shown or registered, and enables Pipedrive webhook subscription at onboarding |
 | `ADMIN_PASSWORD` | HTTP basic auth for `/admin` (user `admin`) |
 | `ALERT_EMAIL` | our address for sync alerts |
 | `MAIL_FROM` | sender address (default `ne-pas-repondre@inclusion.gouv.fr`) |

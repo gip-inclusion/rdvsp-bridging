@@ -12,7 +12,7 @@
       <span class="muted">masqué</span> — <%= button_to "Générer un nouveau mot de passe", reset_password_admin_connection_path(@connection), form_class: "inline", data: { turbo: false } %>
     <% end %>
   </td></tr>
-  <tr><th>URL de l’agenda</th><td><code><%= "#{ENV.fetch('BRIDGE_BASE_URL', request.base_url).delete_suffix('/')}#{@connection.calendar_path}" %></code></td></tr>
+  <tr><th>URL de l’agenda</th><td><code><%= "#{Rails.configuration.x.base_url}#{@connection.calendar_path}" %></code></td></tr>
 </table>
 
 <h2>État</h2>

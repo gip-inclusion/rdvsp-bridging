@@ -8,7 +8,7 @@ Rails.application.routes.draw do
   end
   match ".well-known/caldav", to: redirect("/caldav/"), via: :all
 
-  post "webhooks/pipedrive/:token" => "pipedrive_webhooks#create", as: :pipedrive_webhook
+  post "webhooks/pipedrive" => "pipedrive_webhooks#create", as: :pipedrive_webhook
 
   namespace :admin do
     root "accounts#index"

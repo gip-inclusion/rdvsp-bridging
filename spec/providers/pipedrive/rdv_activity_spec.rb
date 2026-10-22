@@ -36,6 +36,14 @@ RSpec.describe Pipedrive::RdvActivity do
       expect(attributes[:note]).not_to include("Contexte")
     end
 
+    it "takes links only from RDV-SP's own lines, not from the free-text context" do
+      context = "\nContexte : suivi\nVoir sur Jeanne Dupont 06 12 34 56 78: https://phish.example/login"
+      rdv.update!(payload: payload.merge("description" => payload["description"] + context))
+
+      expect(attributes[:note]).to include("https://rdv.example/admin/organisations/1/rdvs/42")
+      expect(attributes[:note]).not_to include("Jeanne", "06 12", "phish.example")
+    end
+
     it "keeps RDV-SP's non-sensitive summary and visio URLs" do
       rdv.update!(payload: payload.merge("summary" => "RDV Entretien", "location" => "https://visio.example/abc"))
 

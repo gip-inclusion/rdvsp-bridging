@@ -4,6 +4,8 @@
 class RdvContent
   DEFAULT_SUBJECT = "RDV Service Public".freeze
   RDVSP_LINK = /Voir sur (?<name>[^:\n]+): (?<url>https?:\S+)/
+  # RDV-SP ends the description with free text from the RDV ("Contexte : …") when its sensitive data option is on
+  CONTEXT = /^Contexte : /
   NOTICE = "Modifier ou supprimer cet événement ici n’a aucun effet sur le rendez-vous.".freeze
 
   def initialize(rdv)
@@ -23,7 +25,7 @@ class RdvContent
   end
 
   def links
-    @payload["description"].to_s.to_enum(:scan, RDVSP_LINK).map { Regexp.last_match }
+    @payload["description"].to_s.split(CONTEXT, 2).first.to_s.to_enum(:scan, RDVSP_LINK).map { Regexp.last_match }
       .map { |match| { name: match[:name].strip, url: match[:url] } }
   end
 

@@ -38,5 +38,8 @@ plugin :tmp_restart
 # In other environments, only set the PID file if requested.
 pidfile ENV["PIDFILE"] if ENV["PIDFILE"]
 
+# Requests carry a few kilobytes of iCalendar, XML or webhook JSON: refuse large bodies (413) before Rails reads them
+http_content_length_limit 1_048_576
+
 # The CalDAV server needs WebDAV methods, which Puma refuses (501) by default
 supported_http_methods Puma::Const::SUPPORTED_HTTP_METHODS + %w[PROPFIND PROPPATCH REPORT MKCALENDAR]
