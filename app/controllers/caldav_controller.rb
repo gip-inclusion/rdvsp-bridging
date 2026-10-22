@@ -9,10 +9,6 @@ class CaldavController < ActionController::API
     "Allow" => "OPTIONS, GET, HEAD, PUT, DELETE, PROPFIND, REPORT",
   }.freeze
 
-  # Counted per username, not per IP: one RDV-SP instance calls for all its agents from the same addresses
-  MAX_FAILED_AUTHENTICATIONS = 10
-  FAILED_AUTHENTICATIONS = ActiveSupport::Cache::MemoryStore.new(expires_in: 10.minutes)
-
   before_action :authenticate
   before_action { response.headers.merge!(DAV_HEADERS) }
 
@@ -54,16 +50,8 @@ class CaldavController < ActionController::API
   attr_reader :connection
 
   def authenticate
-    username, password = ActionController::HttpAuthentication::Basic.user_name_and_password(request) if
-      ActionController::HttpAuthentication::Basic.has_basic_credentials?(request)
-    return request_http_basic_authentication("rdvsp-bridging") if username.blank?
-    return head :too_many_requests if FAILED_AUTHENTICATIONS.read(username).to_i >= MAX_FAILED_AUTHENTICATIONS
-
-    @connection = Connection.authenticate(username, password)
-    if @connection.nil?
-      FAILED_AUTHENTICATIONS.increment(username)
-      return request_http_basic_authentication("rdvsp-bridging")
-    end
+    @connection = authenticate_with_http_basic { |username, password| Connection.authenticate(username, password) }
+    return request_http_basic_authentication("rdvsp-bridging") if @connection.nil?
     return head :not_found if @connection.public_id != params[:public_id]
 
     @connection.touch_last_seen!

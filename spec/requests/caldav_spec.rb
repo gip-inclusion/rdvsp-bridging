@@ -13,18 +13,6 @@ RSpec.describe "CalDAV server" do
     expect(response).to have_http_status(:unauthorized)
   end
 
-  it "throttles repeated wrong passwords for a username" do
-    CaldavController::FAILED_AUTHENTICATIONS.clear
-    wrong = ActionController::HttpAuthentication::Basic.encode_credentials(connection.username, "wrong")
-    10.times { process :propfind, connection.calendar_path, headers: { "Depth" => "0", "Authorization" => wrong } }
-    expect(response).to have_http_status(:unauthorized)
-
-    process :propfind, connection.calendar_path, headers: { "Depth" => "0", "Authorization" => auth }
-    expect(response).to have_http_status(:too_many_requests)
-  ensure
-    CaldavController::FAILED_AUTHENTICATIONS.clear
-  end
-
   it "hides other connections' calendars" do
     process :propfind, other.calendar_path, headers: { "Depth" => "0", "Authorization" => auth }
 

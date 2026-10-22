@@ -131,8 +131,11 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
       usager data (or any link) into the partner's tool without `usager_details`.
     - CalDAV passwords are digested with SHA-256 instead of bcrypt: they are 32 random characters, so bcrypt only made
       every RDV-SP request cost ~250 ms of CPU and leaked whether a username exists. Bcrypt digests are upgraded on
-      the next successful login (bcrypt stays in the Gemfile until then). 10 failed logins per username lock it for
-      10 minutes (per username, not per IP: one RDV-SP instance serves all its agents from the same addresses).
+      the next successful login (bcrypt stays in the Gemfile until then).
+    - **(you)** No lockout after failed CalDAV logins: guessing a 187-bit random password online is hopeless anyway,
+      while a lockout would let anyone who knows a username stop that agent's sync, and would lock out RDV-SP
+      still polling with the old password right after a reset. Per IP is not an option either (one RDV-SP instance
+      serves all its agents from the same addresses). A leaked password is handled by a reset from the admin.
     - `/admin` is rate limited (30 requests per minute, wrong passwords included).
     - `BRIDGE_BASE_URL` is the only source of public URLs (`config.x.base_url`) and, in production, the only allowed
       host (`Host` and `X-Forwarded-Host`; `/up` excluded for the platform's probes).
