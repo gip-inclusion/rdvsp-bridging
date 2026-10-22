@@ -16,4 +16,10 @@ RSpec.describe "Pipedrive webhooks" do
 
     expect(response).to have_http_status(:not_found)
   end
+
+  it "checks the token before parsing the body" do
+    post "/webhooks/pipedrive/nope", params: "{not json", headers: { "Content-Type" => "application/json" }
+
+    expect(response).to have_http_status(:not_found)
+  end
 end
