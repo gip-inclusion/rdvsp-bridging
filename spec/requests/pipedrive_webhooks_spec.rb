@@ -11,6 +11,16 @@ RSpec.describe "Pipedrive webhooks" do
     expect(SyncActivityJob).to have_been_enqueued.with(account, "12")
   end
 
+  it "keeps the activity contents out of the logs" do
+    post "/webhooks/pipedrive/#{account.webhook_token}",
+         params: { meta: { entity_id: "12" }, data: { subject: "Jeanne Dupont" }, previous: { note: "06 12" } },
+         as: :json
+
+    expect(request.filtered_parameters).to include("meta" => { "entity_id" => "12" }, "data" => "[FILTERED]",
+                                                   "previous" => "[FILTERED]")
+    expect(request.filtered_parameters.to_s).not_to include("Jeanne", "06 12")
+  end
+
   it "ignores unknown tokens" do
     post "/webhooks/pipedrive/nope", params: { meta: { entity_id: "12" } }, as: :json
 
