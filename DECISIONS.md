@@ -99,8 +99,8 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
 - **Pipedrive sandbox state**: activity type "RDV Service Public" (created by onboarding), person "Jeanne Dupont"
   (Person-linking test), activity #3 "RDV Accueil" on Oct 22 (left so you can see what an RDV looks like),
   meetings #2 (Oct 20) and #5 (Oct 21) used as busy times. Rotate the API token after the pilot.
-- **Not done**: Pipedrive OAuth private app (next milestone), Google live test (needs an OAuth client), rate limiting
-  of CalDAV Basic auth, per-admin accounts/audit on `/admin` (single shared password today).
+- **Not done**: Pipedrive OAuth private app (next milestone), Google live test (needs an OAuth client), per-admin
+  accounts/audit on `/admin` (single shared password today).
 
 ## Deployment (2026-10-20)
 
@@ -117,3 +117,23 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
     since my permissions refused repo-settings changes. Still to do: `SCW_ACCESS_KEY` / `SCW_SECRET_KEY` repository
     secrets (the CLI here can't create IAM keys), a custom domain, TEM for alert e-mails, and optionally secret
     scanning + push protection + Dependabot security updates (free on public repos, currently off).
+
+## Security audit (2026-10-22)
+
+29. **(you → me)** Fixes from the audit (code review, local pentest, black-box checks of nova):
+    - Puma refuses bodies over 1 MB (413): requests carry a few kilobytes, and parsing a large JSON body could exhaust
+      the 1 GB container before any authentication.
+    - Pipedrive webhooks authenticate with HTTP basic auth (user `rdvsp-bridging`, password = the account's webhook
+      token), checked before the body is parsed; the token is no longer in the URL, hence no longer in the logs.
+      Onboarding replaces this bridge's existing webhooks, since Pipedrive never returns the password. Webhook
+      `data`/`previous` are filtered from the logs (they carry the activity's subject, note and participants).
+    - Links are taken only from the description before RDV-SP's free-text `Contexte :`, which could otherwise smuggle
+      usager data (or any link) into the partner's tool without `usager_details`.
+    - CalDAV passwords are digested with SHA-256 instead of bcrypt: they are 32 random characters, so bcrypt only made
+      every RDV-SP request cost ~250 ms of CPU and leaked whether a username exists. Bcrypt digests are upgraded on
+      the next successful login (bcrypt stays in the Gemfile until then). 10 failed logins per username lock it for
+      10 minutes (per username, not per IP: one RDV-SP instance serves all its agents from the same addresses).
+    - `/admin` is rate limited (30 requests per minute, wrong passwords included).
+    - `BRIDGE_BASE_URL` is the only source of public URLs (`config.x.base_url`) and, in production, the only allowed
+      host (`Host` and `X-Forwarded-Host`; `/up` excluded for the platform's probes).
+
