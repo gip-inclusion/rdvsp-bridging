@@ -55,7 +55,7 @@ Rails.application.configure do
   # config.action_mailer.raise_delivery_errors = false
 
   # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: URI(ENV.fetch("BRIDGE_BASE_URL", "https://example.com")).host }
+  config.action_mailer.default_url_options = { host: URI(config.x.base_url).host }
   if ENV["SMTP_ADDRESS"].present?
     config.action_mailer.delivery_method = :smtp
     config.action_mailer.smtp_settings = {
@@ -87,12 +87,7 @@ Rails.application.configure do
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [:id]
 
-  # Enable DNS rebinding protection and other `Host` header attacks.
-  # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
-  # ]
-  #
-  # Skip DNS rebinding protection for the default health check endpoint.
-  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  # Only BRIDGE_BASE_URL's host (Host and X-Forwarded-Host), except for the platform's health checks
+  config.hosts = [URI(config.x.base_url).host]
+  config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end

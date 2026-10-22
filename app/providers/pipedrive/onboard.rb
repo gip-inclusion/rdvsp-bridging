@@ -4,7 +4,7 @@ module Pipedrive
   class Onboard < BaseService
     RDV_ACTIVITY_TYPE_NAME = "RDV Service Public".freeze
 
-    def initialize(api_token:, alert_email: nil, base_url: ENV["BRIDGE_BASE_URL"])
+    def initialize(api_token:, alert_email: nil, base_url: Rails.configuration.x.base_url)
       @api_token = api_token.to_s.strip
       @alert_email = alert_email
       @base_url = base_url

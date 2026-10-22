@@ -25,5 +25,5 @@ class Admin::GoogleController < Admin::BaseController
 
   private
 
-  def redirect_uri = "#{ENV.fetch('BRIDGE_BASE_URL', request.base_url).delete_suffix('/')}#{admin_google_callback_path}"
+  def redirect_uri = "#{Rails.configuration.x.base_url}#{admin_google_callback_path}"
 end

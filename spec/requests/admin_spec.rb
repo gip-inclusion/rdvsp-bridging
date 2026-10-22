@@ -13,4 +13,15 @@ RSpec.describe "Admin" do
   ensure
     Admin::BaseController::RATE_LIMIT_STORE.clear
   end
+
+  it "builds the CalDAV URL from the configured base URL, not from the request's host" do
+    connection = create(:connection)
+    auth = ActionController::HttpAuthentication::Basic.encode_credentials("admin", "admin")
+
+    get "/admin/connections/#{connection.id}",
+        headers: { "Authorization" => auth, "User-Agent" => browser, "X-Forwarded-Host" => "evil.example" }
+
+    expect(response.body).to include("http://localhost:3010#{connection.calendar_path}")
+    expect(response.body).not_to include("evil.example")
+  end
 end

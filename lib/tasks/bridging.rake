@@ -18,8 +18,7 @@ namespace :bridging do
                                         provider_user_id: args[:provider_user_id], agent_email: args[:agent_email])
       abort result.errors.to_sentence if result.failure?
 
-      base_url = ENV.fetch("BRIDGE_BASE_URL", "http://localhost:3010").delete_suffix("/")
-      puts "URL:      #{base_url}#{result.connection.calendar_path}"
+      puts "URL:      #{Rails.configuration.x.base_url}#{result.connection.calendar_path}"
       puts "Username: #{result.connection.username}"
       puts "Password: #{result.password}"
     end
