@@ -20,9 +20,9 @@ gem "tzinfo-data", platforms: %i[windows jruby]
 gem "bootsnap", require: false
 
 # Background jobs, retries and cron, stored in Postgres
-gem "good_job", "~> 4.11"
+gem "good_job", "~> 4.23"
 # HTTP client for provider APIs
-gem "faraday", "~> 2.13"
+gem "faraday", "~> 2.15"
 gem "faraday-retry", "~> 2.3"
 # iCalendar parsing and generation
 gem "icalendar", "~> 2.11"
