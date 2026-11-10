@@ -4,6 +4,7 @@
 class RdvContent
   DEFAULT_SUBJECT = "RDV Service Public".freeze
   RDVSP_LINK = /Voir sur (?<name>[^:\n]+): (?<url>https?:\S+)/
+  RDVSP_RDV_PATH = %r{/admin/organisations/\d+/rdvs/(\d+)\b}
   # RDV-SP ends the description with free text from the RDV ("Contexte : …") when its sensitive data option is on
   CONTEXT = /^Contexte : /
   NOTICE = "Modifier ou supprimer cet événement ici n’a aucun effet sur le rendez-vous.".freeze

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_19_230000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_10_155242) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -214,6 +214,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_19_230000) do
     t.text "last_error"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "rdvsp_id"
     t.index ["connection_id", "href_name"], name: "index_rdvs_on_connection_id_and_href_name", unique: true
     t.index ["provider_object_id"], name: "index_rdvs_on_provider_object_id"
   end

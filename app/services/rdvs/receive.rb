@@ -13,6 +13,7 @@ module Rdvs
       result.created = rdv.new_record? || rdv.cancelled?
       rdv.assign_attributes(
         uid: event.uid, starts_at: event.starts_at, ends_at: event.ends_at, payload: event.payload,
+        rdvsp_id: event.rdvsp_id || rdv.rdvsp_id,
         cancelled_at: event.cancelled ? (rdv.cancelled_at || Time.current) : nil, state: "pending", last_error: nil
       )
       rdv.regenerate_etag
