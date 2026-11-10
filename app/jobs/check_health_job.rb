@@ -15,7 +15,7 @@ class CheckHealthJob < ApplicationJob
   private
 
   def alert_failing_accounts
-    Account.where.not(failing_since: nil).find_each do |account|
+    Account.where.not(failing_since: nil).where(id: Connection.active.select(:account_id)).find_each do |account|
       next unless account.failing_for_too_long?
       next if account.alerted_at&.after?(REALERT_AFTER.ago)
 
