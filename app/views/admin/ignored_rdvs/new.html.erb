@@ -1,0 +1,32 @@
+<% before = @before.in_time_zone(Admin::IgnoredRdvsController::PARIS).strftime("%Y-%m-%dT%H:%M:%S") %>
+<h1>Ignorer des RDV existants</h1>
+<p class="muted">
+  <%= link_to @connection.provider_user_name || @connection.provider_user_id, admin_connection_path(@connection) %> ·
+  agent RDV-SP : <%= @connection.agent_email || "?" %>
+</p>
+<p>
+  Les RDV reçus avant cette heure seront ignorés : la passerelle supprime les activités qu’elle a créées pour eux et ne
+  les transmettra plus, même s’ils sont modifiés ou annulés dans RDV-SP. Les copies faites par l’agent ne sont pas
+  touchées.
+</p>
+<%= form_with url: new_admin_connection_ignored_rdv_path(@connection), method: :get do |f| %>
+  <label>Reçus avant (heure de Paris) <%= f.datetime_local_field :before, value: before, step: 1 %></label>
+  <%= f.submit "Prévisualiser", name: nil %>
+<% end %>
+
+<h2><%= @rdvs.size %> RDV concernés</h2>
+<% if @rdvs.any? %>
+  <table>
+    <tr><th>Reçu le</th><th>Début</th><th>N° RDV-SP</th><th>État</th><th>Activité créée</th></tr>
+    <% @rdvs.each do |rdv| %>
+      <tr>
+        <td><%= paris_time(rdv.created_at) %></td>
+        <td><%= paris_time(rdv.starts_at) %></td>
+        <td><%= rdv.rdvsp_id || "?" %></td>
+        <td><%= rdv_status(rdv) %></td>
+        <td><%= rdv.provider_object_id ? "oui, à supprimer" : "non" %></td>
+      </tr>
+    <% end %>
+  </table>
+  <%= button_to "Ignorer ces #{@rdvs.size} RDV", admin_connection_ignored_rdvs_path(@connection), params: { before: } %>
+<% end %>

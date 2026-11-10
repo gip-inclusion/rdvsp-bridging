@@ -43,6 +43,7 @@
     Les RDV de numéro RDV-SP inférieur ou égal à <%= @connection.baseline_max_rdvsp_id %> reçus plus tard sont ignorés aussi.
   <% end %>
 </p>
+<p><%= link_to "Ignorer les RDV reçus avant…", new_admin_connection_ignored_rdv_path(@connection) %></p>
 <% if @rdvs.any? %>
   <table>
     <tr><th>Reçu le</th><th>Début</th><th>N° RDV-SP</th><th>État</th><th></th></tr>
