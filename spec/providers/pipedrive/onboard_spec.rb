@@ -13,6 +13,7 @@ RSpec.describe Pipedrive::Onboard do
       { id: 1, subscription_url: "https://bridge.example/webhooks/pipedrive/old-token" },
       { id: 2, subscription_url: "https://bridge.example/webhooks/pipedrive" },
       { id: 3, subscription_url: "https://other-bridge.example/webhooks/pipedrive" },
+      { id: 5, subscription_url: "https://alias-bridge.example/webhooks/pipedrive" },
     ]
     stub_request(:get, "#{api}/v1/users/me").to_return_json(body: { data: me })
     stub_request(:get, "#{api}/v1/activityTypes").to_return_json(body: { data: types })
@@ -35,6 +36,14 @@ RSpec.describe Pipedrive::Onboard do
 
     expect(WebMock).to have_requested(:delete, "#{api}/v1/webhooks/1")
     expect(WebMock).to have_requested(:delete, "#{api}/v1/webhooks/2")
+    expect(WebMock).not_to have_requested(:delete, "#{api}/v1/webhooks/3")
+  end
+
+  it "also replaces the webhooks registered on the bridge's other hosts" do
+    described_class.call(api_token: "admin-token", base_url: "https://bridge.example",
+                         hosts: ["alias-bridge.example"])
+
+    expect(WebMock).to have_requested(:delete, "#{api}/v1/webhooks/5")
     expect(WebMock).not_to have_requested(:delete, "#{api}/v1/webhooks/3")
   end
 end

@@ -4,10 +4,12 @@ module Pipedrive
   class Onboard < BaseService
     RDV_ACTIVITY_TYPE_NAME = "RDV Service Public".freeze
 
-    def initialize(api_token:, alert_email: nil, base_url: Rails.configuration.x.base_url)
+    def initialize(api_token:, alert_email: nil, base_url: Rails.configuration.x.base_url,
+                   hosts: Rails.configuration.x.allowed_hosts)
       @api_token = api_token.to_s.strip
       @alert_email = alert_email
       @base_url = base_url
+      @hosts = hosts
     end
 
     def call
@@ -32,13 +34,14 @@ module Pipedrive
       (existing || client.create_activity_type(name: RDV_ACTIVITY_TYPE_NAME, icon_key: "calendar"))["key_string"]
     end
 
-    # Pipedrive never returns the basic auth password, so this bridge's webhooks are always replaced
+    # Pipedrive never returns the basic auth password, so the webhooks on any of this bridge's hosts are always replaced
     def subscribe_to_webhooks(account)
       return unless @base_url.to_s.start_with?("https://")
 
       url = "#{@base_url.delete_suffix('/')}/webhooks/pipedrive"
-      client.webhooks.select { it["subscription_url"].to_s.start_with?(url) }.each do |webhook|
-        client.delete_webhook(webhook["id"])
+      urls = [url, *@hosts.map { "https://#{it}/webhooks/pipedrive" }]
+      client.webhooks.each do |webhook|
+        client.delete_webhook(webhook["id"]) if urls.any? { webhook["subscription_url"].to_s.start_with?(it) }
       end
       webhook = client.create_webhook(subscription_url: url, event_action: "*", event_object: "activity",
                                       version: "2.0", http_auth_user: PipedriveWebhooksController::HTTP_AUTH_USER,
