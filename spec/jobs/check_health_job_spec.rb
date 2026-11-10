@@ -13,4 +13,36 @@ RSpec.describe CheckHealthJob do
 
     expect { described_class.perform_now }.not_to have_enqueued_mail
   end
+
+  describe "when RDV-SP stops coming" do
+    before { allow(Rails.error).to receive(:report) }
+
+    it "alerts us once about the active connections it hasn't polled for half an hour" do
+      silent = create(:connection, last_seen_at: 40.minutes.ago)
+      create(:connection, last_seen_at: 5.minutes.ago)
+      create(:connection, last_seen_at: nil)
+      create(:connection, last_seen_at: 2.hours.ago, disabled_at: 1.day.ago)
+
+      expect { described_class.perform_now }.to have_enqueued_mail(AlertMailer, :connections_silent).with([silent])
+      expect(Rails.error).to have_received(:report).with(instance_of(CheckHealthJob::ConnectionsSilent), anything)
+      expect { described_class.perform_now }.not_to have_enqueued_mail(AlertMailer, :connections_silent)
+    end
+
+    it "repeats the alert daily while the silence lasts" do
+      connection = create(:connection, last_seen_at: 40.minutes.ago)
+      described_class.perform_now
+      travel 1.day + 1.minute
+
+      expect { described_class.perform_now }.to have_enqueued_mail(AlertMailer, :connections_silent).with([connection])
+    end
+
+    it "alerts again when RDV-SP came back in between" do
+      connection = create(:connection, last_seen_at: 40.minutes.ago)
+      described_class.perform_now
+      connection.update!(last_seen_at: Time.current)
+      travel 40.minutes
+
+      expect { described_class.perform_now }.to have_enqueued_mail(AlertMailer, :connections_silent).with([connection])
+    end
+  end
 end

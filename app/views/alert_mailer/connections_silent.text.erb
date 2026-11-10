@@ -1,0 +1,9 @@
+Bonjour,
+
+RDV Service Public n'a pas consulté ces agendas depuis plus de <%= CheckHealthJob::SILENCE_THRESHOLD.in_minutes.to_i %> minutes, alors qu'il le fait au moins toutes les 15 minutes :
+
+<% @connections.each do |connection| %>
+- <%= connection.provider_user_name || connection.provider_user_id %> (agent <%= connection.agent_email || "?" %>, compte « <%= connection.account.name %> ») : dernier passage le <%= l(connection.last_seen_at.in_time_zone("Europe/Paris"), format: :long) %>
+<% end %>
+
+Si tous les agendas sont concernés, la passerelle est sans doute en erreur ou injoignable : regardez les journaux du conteneur. Si un seul l'est, l'agent a peut-être déconnecté son agenda dans RDV Service Public.

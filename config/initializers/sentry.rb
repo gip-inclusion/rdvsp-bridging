@@ -6,5 +6,7 @@ if ENV["SENTRY_DSN"].present?
     # Request bodies (iCalendar from RDV-SP) can contain usager personal data
     config.send_default_pii = false
     config.traces_sample_rate = 0
+    # Errors reported through Rails.error (e.g. CheckHealthJob's alerts) reach Sentry too
+    config.rails.register_error_subscriber = true
   end
 end
