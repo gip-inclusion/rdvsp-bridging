@@ -6,7 +6,10 @@ module Google
     end
 
     def call
-      @rdv.cancelled? ? delete_event : upsert_event
+      if @rdv.ignored? then remove_event
+      elsif @rdv.cancelled? then delete_event
+      else upsert_event
+      end
       @rdv.update!(state: "synced", pushed_at: Time.current, last_error: nil, payload: nil)
     rescue Google::Error => e
       @rdv.update!(state: "failed", last_error: e.message.truncate(1_000))
@@ -23,6 +26,12 @@ module Google
       client.delete_event(calendar_id, @rdv.provider_object_id) if @rdv.provider_object_id
     rescue Google::NotFoundError
       nil
+    end
+
+    # The RDV existed before the connection: the agent has their own copy, ours must go
+    def remove_event
+      delete_event
+      @rdv.update!(provider_object_id: nil)
     end
 
     def upsert_event

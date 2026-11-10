@@ -47,6 +47,14 @@ Metrics/PerceivedComplexity:
 Naming/VariableNumber:
   Enabled: false
 
+# A bang method may report whether it acted (Connection#extend_open_baseline!)
+Naming/PredicateMethod:
+  AllowBangMethods: true
+
+# strong_migrations can't inspect change_table blocks
+Rails/BulkChangeTable:
+  Enabled: false
+
 Rails/I18nLocaleTexts:
   Enabled: false
 Rails/SkipsModelValidations:

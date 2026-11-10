@@ -14,6 +14,12 @@ RSpec.describe "RDV Service Public's CalDAV client against the bridge" do
     [BusyBlock, BusyBlockChange, Rdv, Connection, Account].each(&:delete_all)
   end
 
+  # RDVs PUT in the minute after the connection check are taken for RDV-SP's bulk export of existing RDVs
+  def wait_for_the_start_up_window
+    travel 2.minutes
+    account.update!(refreshed_at: Time.current)
+  end
+
   it "lets the agent pick the calendar from the server URL" do
     calendars = rdvsp.selectable_calendars("#{TestServer.url}/caldav/#{connection.public_id}/")
 
@@ -73,6 +79,7 @@ RSpec.describe "RDV Service Public's CalDAV client against the bridge" do
 
   it "receives RDVs, their updates and their deletion, and never re-imports them as busy" do
     rdvsp.configure!(calendar_url)
+    wait_for_the_start_up_window
     uuid = SecureRandom.uuid
     starts_at = 3.days.from_now.change(hour: 14)
 
@@ -94,10 +101,73 @@ RSpec.describe "RDV Service Public's CalDAV client against the bridge" do
 
   it "treats an RDV-SP cancellation (STATUS:CANCELLED update) as a cancellation" do
     rdvsp.configure!(calendar_url)
+    wait_for_the_start_up_window
     uuid = SecureRandom.uuid
     rdvsp.export_rdv(uuid, starts_at: 1.day.from_now, ends_at: 1.day.from_now + 30.minutes)
     rdvsp.export_rdv(uuid, starts_at: 1.day.from_now, ends_at: 1.day.from_now + 30.minutes, status: "CANCELLED")
 
     expect(connection.rdvs.sole.cancelled_at).to be_present
+  end
+
+  context "when the agent connects with RDVs already booked" do
+    let(:old_rdvs) { Array.new(3) { SecureRandom.uuid } }
+    let(:starts_at) { 3.days.from_now.change(hour: 9) }
+
+    def export(uuid, rdvsp_id: 900, **)
+      link = "Voir sur RDV Service Public: https://rdv.example.fr/admin/organisations/1/rdvs/#{rdvsp_id}"
+      rdvsp.export_rdv(uuid, starts_at:, ends_at: starts_at + 30.minutes, description: link, **)
+    end
+
+    def pushes = enqueued_jobs.count { it["job_class"] == "PushRdvJob" }
+
+    before do
+      rdvsp.configure!(calendar_url)
+      old_rdvs.each_with_index { |uuid, index| export(uuid, rdvsp_id: 100 + index) }
+      wait_for_the_start_up_window
+    end
+
+    it "also ignores an older RDV that RDV-SP only sends when someone touches it" do
+      export(older = SecureRandom.uuid, rdvsp_id: 50)
+      export(SecureRandom.uuid, rdvsp_id: 200)
+
+      expect(connection.rdvs.find_by(uid: older)).to be_ignored
+      expect(pushes).to eq(1)
+    end
+
+    it "ignores the bulk export, without RDV-SP noticing, and pushes the RDVs booked afterwards" do
+      new_rdv = SecureRandom.uuid
+      export(new_rdv)
+
+      export(old_rdvs.first, status: "CANCELLED")
+      rdvsp.delete_rdv(old_rdvs.second)
+
+      expect(connection.rdvs.ignored.pluck(:uid)).to match_array(old_rdvs)
+      expect(rdvsp.exported_urls.values).to all(start_with(calendar_url))
+      expect(pushes).to eq(1)
+    end
+
+    it "changes nothing when the agent saves their settings again" do
+      new_rdv = SecureRandom.uuid
+      export(new_rdv)
+
+      rdvsp.configure!(calendar_url)
+      (old_rdvs + [new_rdv]).each { export(it) }
+
+      expect(connection.rdvs.ignored.pluck(:uid)).to match_array(old_rdvs)
+      expect(pushes).to eq(2)
+    end
+
+    it "keeps each RDV as it was after a disconnection, and ignores those booked meanwhile" do
+      new_rdv = SecureRandom.uuid
+      export(new_rdv)
+      (old_rdvs + [new_rdv]).each { rdvsp.delete_rdv(it) }
+      booked_meanwhile = SecureRandom.uuid
+
+      rdvsp.configure!(calendar_url)
+      (old_rdvs + [new_rdv, booked_meanwhile]).each { export(it) }
+
+      expect(connection.rdvs.ignored.pluck(:uid)).to match_array(old_rdvs + [booked_meanwhile])
+      expect(pushes).to eq(3)
+    end
   end
 end

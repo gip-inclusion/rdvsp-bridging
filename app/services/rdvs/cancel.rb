@@ -10,8 +10,8 @@ module Rdvs
       rdv = @connection.rdvs.find_by(href_name: @href_name)
       fail!("not found") if rdv.nil? || rdv.cancelled?
 
-      rdv.update!(cancelled_at: Time.current, state: "pending", payload: nil)
-      PushRdvJob.perform_later(rdv)
+      rdv.update!(cancelled_at: Time.current, state: rdv.needs_push? ? "pending" : "synced", payload: nil)
+      PushRdvJob.perform_later(rdv) if rdv.needs_push?
       result.rdv = rdv
     end
   end

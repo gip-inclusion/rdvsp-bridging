@@ -33,6 +33,63 @@ RSpec.describe Pipedrive::PushRdv do
     expect(rdv.reload.provider_object_id).to eq("78")
   end
 
+  it "recreates the activity when Pipedrive refuses to update it because it was deleted" do
+    rdv.update!(provider_object_id: "77")
+    stub_request(:patch, "#{api}/api/v2/activities/77")
+      .to_return(status: 403, body: { success: false, error: "Cannot update a deleted activity." }.to_json)
+    stub_request(:get, "#{api}/api/v2/activities/77").to_return_json(body: { data: { id: 77, is_deleted: true } })
+    stub_request(:post, "#{api}/api/v2/activities").to_return_json(body: { data: { id: 78 } })
+
+    described_class.call(rdv:)
+
+    expect(rdv.reload).to have_attributes(provider_object_id: "78", state: "synced")
+  end
+
+  it "still fails when Pipedrive refuses an update for another reason" do
+    rdv.update!(provider_object_id: "77")
+    stub_request(:patch, "#{api}/api/v2/activities/77").to_return(status: 403, body: "{}")
+    stub_request(:get, "#{api}/api/v2/activities/77").to_return_json(body: { data: { id: 77, is_deleted: false } })
+
+    expect { described_class.call(rdv:) }.to raise_error(Pipedrive::AuthenticationError)
+    expect(rdv.reload.state).to eq("failed")
+  end
+
+  it "accepts that the activity of a cancelled RDV was already deleted" do
+    rdv.update!(provider_object_id: "77", cancelled_at: Time.current)
+    stub_request(:delete, "#{api}/api/v2/activities/77")
+      .to_return(status: 400, body: { success: false, error: "Activity is already deleted" }.to_json)
+    stub_request(:get, "#{api}/api/v2/activities/77").to_return_json(body: { data: { id: 77, is_deleted: true } })
+
+    described_class.call(rdv:)
+
+    expect(rdv.reload.state).to eq("synced")
+  end
+
+  context "when the RDV is ignored, as it existed before the connection" do
+    before { rdv.update!(ignored_at: Time.current, payload: nil) }
+
+    it "removes its activity and forgets it, never creating one" do
+      rdv.update!(provider_object_id: "77")
+      delete = stub_request(:delete, "#{api}/api/v2/activities/77").to_return_json(body: { data: { id: 77 } })
+
+      described_class.call(rdv:)
+
+      expect(delete).to have_been_requested
+      expect(rdv.reload).to have_attributes(provider_object_id: nil, state: "synced")
+    end
+
+    it "accepts that its activity was already deleted by hand" do
+      rdv.update!(provider_object_id: "77")
+      stub_request(:delete, "#{api}/api/v2/activities/77")
+        .to_return(status: 400, body: { success: false, error: "Activity is already deleted" }.to_json)
+      stub_request(:get, "#{api}/api/v2/activities/77").to_return_json(body: { data: { id: 77, is_deleted: true } })
+
+      described_class.call(rdv:)
+
+      expect(rdv.reload).to have_attributes(provider_object_id: nil, state: "synced")
+    end
+  end
+
   it "deletes the activity of a cancelled RDV" do
     rdv.update!(provider_object_id: "77", cancelled_at: Time.current)
     request = stub_request(:delete, "#{api}/api/v2/activities/77").to_return_json(body: { data: { id: 77 } })

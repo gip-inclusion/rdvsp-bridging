@@ -2,6 +2,7 @@ class Admin::ConnectionsController < Admin::BaseController
   def show
     @connection = Connection.find(params.expect(:id))
     @password = flash[:password]
+    @rdvs = @connection.rdvs.order(created_at: :desc).limit(50)
   end
 
   def new

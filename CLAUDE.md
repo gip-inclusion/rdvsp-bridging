@@ -31,7 +31,8 @@ Exact requests, verified by reading the gem and RDV-SP code (`production` branch
    contains `caldav:calendar` and whose `supported-calendar-component-set` includes `VEVENT`.
 3. `PROPFIND` Depth 0 on the agenda (`calendars.find(url, sync: true)`): the connection check **refuses servers
    without a `sync-token`**. The calendar's `displayname` and `calendar-color` are stored by RDV-SP.
-4. Connection test: `PUT <agenda>/rdvsp-connection-test-<uuid>.ics` then `DELETE` it. Never forwarded to providers.
+4. Connection test: `PUT <agenda>/rdvsp-connection-test-<uuid>.ics` then `DELETE` it. Never forwarded to providers;
+   it opens the start-up window in which the RDVs that already exist arrive (`MassExportEventToCaldavJob`).
 5. First import: `REPORT calendar-query` Depth 1. Next imports: `REPORT sync-collection` with the stored token.
    RDV-SP **ignores 507/pagination and does not recover from sync errors** → never fail a sync-token, never paginate.
 6. RDV-SP drops imported events whose URL equals an RDV it exported, events without `DTEND`, and non-busy events
@@ -46,7 +47,9 @@ Exact requests, verified by reading the gem and RDV-SP code (`production` branch
 - `Connection`: one provider user ↔ one RDV-SP agent; owns the CalDAV credentials and exposes exactly one calendar.
 - `BusyBlock`: local mirror of the provider's busy items, append-only change sequence + tombstones. Sync tokens are
   `<generation>-<sequence>`; unknown/old tokens get the full state (never an error).
-- `Rdv`: an RDV pushed by RDV-SP (keyed by connection + href), written to the provider asynchronously.
+- `Rdv`: an RDV pushed by RDV-SP (keyed by connection + href), written to the provider asynchronously, unless it
+  existed before the connection: RDV-SP sends every RDV from two weeks back when the agent saves their settings, and
+  those are stored but *ignored* (`docs/preexisting-rdvs.md`).
 - `app/caldav/`: provider-agnostic CalDAV server (XML parsing/rendering, ICS in/out).
 - `app/providers/pipedrive/`: API client, activity → busy block mapping, RDV → activity writer, webhooks.
 - `app/providers/google/`: spike, Calendar REST API + OAuth (`docs/google.md`).

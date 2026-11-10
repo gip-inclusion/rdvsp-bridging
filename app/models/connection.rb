@@ -1,6 +1,9 @@
 class Connection < ApplicationRecord
   include SyncCollection
 
+  BASELINE_QUIET = 1.minute
+  BASELINE_LIMIT = 15.minutes
+
   belongs_to :account
   has_many :busy_blocks, dependent: :delete_all
   has_many :busy_block_changes, dependent: :delete_all
@@ -41,6 +44,37 @@ class Connection < ApplicationRecord
 
   def touch_last_seen!
     update_column(:last_seen_at, Time.current) if last_seen_at.nil? || last_seen_at.before?(1.minute.ago)
+  end
+
+  # RDV-SP tests the connection whenever the agent saves their settings, then PUTs every RDV from two weeks back:
+  # RDVs first received before a quiet minute has passed existed before the connection (docs/preexisting-rdvs.md)
+  def open_baseline!
+    now = Time.current
+    update_columns(baseline_started_at: now, baseline_until: now + BASELINE_QUIET)
+  end
+
+  # Whether the start-up window is open, keeping it open a quiet minute more (never past BASELINE_LIMIT). A single
+  # statement, since the bulk export arrives as concurrent requests.
+  def extend_open_baseline!
+    now = Time.current
+    extended = self.class.where(id:, baseline_until: now..).update_all(
+      ["baseline_until = LEAST(GREATEST(baseline_until, ?), baseline_started_at + make_interval(secs => ?))",
+       now + BASELINE_QUIET, BASELINE_LIMIT.to_i,]
+    )
+    extended == 1
+  end
+
+  # RDV-SP numbers RDVs in booking order, so an RDV at or below the highest id ignored on this connection existed
+  # before it too: a late retry of the bulk export, or an older RDV someone just touched
+  def below_baseline_watermark?(rdvsp_id)
+    watermark = self.class.where(id:).pick(:baseline_max_rdvsp_id)
+    rdvsp_id.present? && watermark.present? && rdvsp_id <= watermark
+  end
+
+  def raise_baseline_watermark!(rdvsp_id)
+    return if rdvsp_id.nil?
+
+    self.class.where(id:).update_all(["baseline_max_rdvsp_id = GREATEST(baseline_max_rdvsp_id, ?)", rdvsp_id])
   end
 
   private

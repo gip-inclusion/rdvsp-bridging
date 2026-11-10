@@ -24,6 +24,45 @@
   <%= button_to "Reconstruire", rebuild_admin_connection_path(@connection), form_class: "inline" %>
 </p>
 
+<h2>Rendez-vous reçus de RDV-SP</h2>
+<p>
+  transmis : <%= @connection.rdvs.transmitted.count %> ·
+  ignorés : <%= @connection.rdvs.ignored.count %> (déjà pris avant la connexion) ·
+  en échec : <%= @connection.rdvs.where(state: "failed").count %> ·
+  annulés : <%= @connection.rdvs.cancelled.count %>
+</p>
+<p class="muted">
+  <% if @connection.baseline_started_at %>
+    Dernier test de connexion par RDV-SP : <%= paris_time(@connection.baseline_started_at) %> ;
+    <%= @connection.rdvs.ignored.where(created_at: @connection.baseline_started_at..@connection.baseline_until).count %>
+    RDV existants reçus et ignorés jusqu’à <%= paris_time(@connection.baseline_until) %>.
+  <% else %>
+    Aucun test de connexion par RDV-SP enregistré depuis que la passerelle ignore les RDV existants.
+  <% end %>
+  <% if @connection.baseline_max_rdvsp_id %>
+    Les RDV de numéro RDV-SP inférieur ou égal à <%= @connection.baseline_max_rdvsp_id %> reçus plus tard sont ignorés aussi.
+  <% end %>
+</p>
+<p><%= link_to "Ignorer les RDV reçus avant…", new_admin_connection_ignored_rdv_path(@connection) %></p>
+<% if @rdvs.any? %>
+  <table>
+    <tr><th>Reçu le</th><th>Début</th><th>N° RDV-SP</th><th>État</th><th></th></tr>
+    <% @rdvs.each do |rdv| %>
+      <tr>
+        <td><%= paris_time(rdv.created_at) %></td>
+        <td><%= paris_time(rdv.starts_at) %></td>
+        <td><%= rdv.rdvsp_id || "?" %></td>
+        <td><%= rdv_status(rdv) %></td>
+        <td>
+          <% if rdv.ignored? %>
+            <%= button_to "Transmettre quand même", release_admin_rdv_path(rdv), form_class: "inline" %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </table>
+<% end %>
+
 <h2>Options</h2>
 <%= form_with model: @connection, url: admin_connection_path(@connection) do |f| %>
   <label>E-mail de l’agent <%= f.email_field :agent_email, size: 40 %></label>

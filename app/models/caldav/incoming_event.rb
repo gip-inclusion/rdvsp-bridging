@@ -18,5 +18,8 @@ module Caldav
     end
 
     def payload = { "summary" => summary, "description" => description, "location" => location }
+
+    # From RDV-SP's "Voir sur …" link, before the free-text context (see RdvContent)
+    def rdvsp_id = description.split(RdvContent::CONTEXT, 2).first.to_s[RdvContent::RDVSP_RDV_PATH, 1]&.to_i
   end
 end

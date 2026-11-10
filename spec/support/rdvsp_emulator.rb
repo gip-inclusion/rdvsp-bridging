@@ -13,6 +13,28 @@ class RdvspEmulator
     @exported_urls = {}
   end
 
+  # Same shape as IcalFormatters::Ics.from_payload
+  def self.ics(uid:, summary:, description: "", starts_at: Time.current, ends_at: 1.hour.from_now, status: "CONFIRMED")
+    tzid = "Europe/Paris"
+    cal = Icalendar::Calendar.new
+    cal.add_timezone(TZInfo::Timezone.get(tzid).ical_timezone(starts_at))
+    cal.prodid = "RDV Solidarités"
+    cal.event do |event|
+      event.uid = uid
+      event.status = status
+      event.dtstart = Icalendar::Values::DateTime.new(starts_at.in_time_zone(tzid), "tzid" => tzid)
+      event.dtend = Icalendar::Values::DateTime.new(ends_at.in_time_zone(tzid), "tzid" => tzid)
+      event.attendee = [Icalendar::Values::CalAddress.new("mailto:agent@example.fr", { "PARTSTAT" => "ACCEPTED" })]
+      event.summary = summary
+      event.sequence = 0
+      event.description = description
+      event.organizer = "mailto:secretariat@example.fr"
+      event.categories = ["RDV Service Public"]
+    end
+    cal.ip_method = "REQUEST"
+    cal.to_ical
+  end
+
   # Agents::CaldavSyncController#calendar_selection
   def selectable_calendars(url)
     client(url).calendars.list.select { |c| c.components.include?("VEVENT") }
@@ -25,7 +47,8 @@ class RdvspEmulator
     raise "sync-token required by RDV-SP" if client.calendars.find(agenda_url, sync: true).sync_token.blank?
 
     uuid = SecureRandom.uuid
-    test_event = client.events.create(agenda_url, "rdvsp-connection-test-#{uuid}.ics", ics(uid: uuid, summary: "Test"))
+    test_event = client.events.create(agenda_url, "rdvsp-connection-test-#{uuid}.ics",
+                                      self.class.ics(uid: uuid, summary: "Test"))
     client.events.delete(test_event.url)
   end
 
@@ -56,7 +79,7 @@ class RdvspEmulator
 
   # Caldav::ExportRdvToCaldavJob, create and update
   def export_rdv(uuid, starts_at:, ends_at:, summary: "RDV Accueil", description: "", status: "CONFIRMED")
-    body = ics(uid: uuid, summary:, description:, starts_at:, ends_at:, status:)
+    body = self.class.ics(uid: uuid, summary:, description:, starts_at:, ends_at:, status:)
     if exported_urls[uuid]
       client.events.update(exported_urls[uuid], body)
     else
@@ -84,27 +107,5 @@ class RdvspEmulator
     else
       event.transp != "TRANSPARENT"
     end
-  end
-
-  # Same shape as IcalFormatters::Ics.from_payload
-  def ics(uid:, summary:, description: "", starts_at: Time.current, ends_at: 1.hour.from_now, status: "CONFIRMED")
-    tzid = "Europe/Paris"
-    cal = Icalendar::Calendar.new
-    cal.add_timezone(TZInfo::Timezone.get(tzid).ical_timezone(starts_at))
-    cal.prodid = "RDV Solidarités"
-    cal.event do |event|
-      event.uid = uid
-      event.status = status
-      event.dtstart = Icalendar::Values::DateTime.new(starts_at.in_time_zone(tzid), "tzid" => tzid)
-      event.dtend = Icalendar::Values::DateTime.new(ends_at.in_time_zone(tzid), "tzid" => tzid)
-      event.attendee = [Icalendar::Values::CalAddress.new("mailto:agent@example.fr", { "PARTSTAT" => "ACCEPTED" })]
-      event.summary = summary
-      event.sequence = 0
-      event.description = description
-      event.organizer = "mailto:secretariat@example.fr"
-      event.categories = ["RDV Service Public"]
-    end
-    cal.ip_method = "REQUEST"
-    cal.to_ical
   end
 end

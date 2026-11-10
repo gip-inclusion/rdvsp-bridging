@@ -6,7 +6,10 @@ module Pipedrive
     end
 
     def call
-      @rdv.cancelled? ? delete_activity : upsert_activity
+      if @rdv.ignored? then remove_activity
+      elsif @rdv.cancelled? then delete_activity
+      else upsert_activity
+      end
       @rdv.update!(state: "synced", pushed_at: Time.current, last_error: nil, payload: nil)
     rescue Pipedrive::Error => e
       @rdv.update!(state: "failed", last_error: e.message.truncate(1_000))
@@ -25,6 +28,14 @@ module Pipedrive
       client.delete_activity(@rdv.provider_object_id)
     rescue Pipedrive::NotFoundError
       nil
+    rescue Pipedrive::Error
+      raise unless activity_deleted?
+    end
+
+    # The RDV existed before the connection: the partner has their own copy, ours must go
+    def remove_activity
+      delete_activity
+      @rdv.update!(provider_object_id: nil)
     end
 
     def upsert_activity
@@ -41,6 +52,15 @@ module Pipedrive
       activity unless activity["is_deleted"]
     rescue Pipedrive::NotFoundError
       nil
+    rescue Pipedrive::Error
+      raise unless activity_deleted?
+    end
+
+    # Pipedrive refuses to update (403) or delete (400) a deleted activity instead of answering 404
+    def activity_deleted?
+      client.activity(@rdv.provider_object_id)["is_deleted"]
+    rescue Pipedrive::NotFoundError
+      true
     end
 
     def person_id

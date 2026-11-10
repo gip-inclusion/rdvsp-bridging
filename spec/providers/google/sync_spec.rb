@@ -50,6 +50,16 @@ RSpec.describe "Google provider", :google do
       expect(rdv.reload).to have_attributes(provider_object_id: "evt1", state: "synced", payload: nil)
     end
 
+    it "removes the event of an ignored RDV and forgets it, never inserting one" do
+      rdv.update!(provider_object_id: "evt1", ignored_at: Time.current)
+      delete = stub_request(:delete, "#{events_url}/evt1").to_return(status: 204)
+
+      described_class.call(rdv:)
+
+      expect(delete).to have_been_requested
+      expect(rdv.reload).to have_attributes(provider_object_id: nil, state: "synced")
+    end
+
     it "deletes the event of a cancelled RDV, tolerating 410" do
       rdv.update!(provider_object_id: "evt1", cancelled_at: Time.current)
       stub_request(:delete, "#{events_url}/evt1").to_return(status: 410)

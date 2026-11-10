@@ -67,5 +67,9 @@ Secrets go in the container's **secret** environment variables, not plain ones.
    type and the webhook, since `BRIDGE_BASE_URL` is https).
 2. Account page → "Connecter un utilisateur Pipedrive" → credentials page (password shown once).
 3. In RDV-SP, as that agent: *Synchronisation d’agenda → Connecter mon agenda via Caldav*, paste the URL,
-   username and password, pick the "Pipedrive – …" calendar.
-4. Check the connection page: "Dernier passage de RDV-SP" should update within 15 minutes.
+   username and password, pick the "Pipedrive – …" calendar. RDV-SP then sends every RDV of the agent from two weeks
+   back: the bridge ignores them, since the agent usually has them already (`docs/preexisting-rdvs.md`). Tell the agent
+   to **wait a minute before booking a test RDV**, otherwise it is ignored too.
+4. Check the connection page: "Dernier passage de RDV-SP" should update within 15 minutes, and "Rendez-vous reçus de
+   RDV-SP" should count the existing RDVs as ignored. If they were pushed instead (an export delayed by RDV-SP), use
+   "Ignorer les RDV reçus avant…"; an RDV ignored by mistake can be released with "Transmettre quand même".

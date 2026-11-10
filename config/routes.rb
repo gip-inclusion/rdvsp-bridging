@@ -20,6 +20,10 @@ Rails.application.routes.draw do
     resources :connections, only: %i[show update] do
       post :reset_password, on: :member
       post :rebuild, on: :member
+      resources :ignored_rdvs, only: %i[new create]
+    end
+    resources :rdvs, only: [] do
+      post :release, on: :member
     end
   end
 end
