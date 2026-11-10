@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Checks a deployed bridge from outside, through the platform's proxies: each kind of request RDV-SP and Pipedrive
+# make must reach the app and be refused for lack of credentials (401), not fail on the way (5xx). /up alone can't
+# tell: it skips the request logging that reads the client's address, which is what broke on 2026-11-10.
+set -uo pipefail
+
+base_url="${1:?usage: bin/smoke-test https://bridge.example.fr}"
+attempts="${SMOKE_TEST_ATTEMPTS:-5}"
+browser="Mozilla/5.0 (Macintosh) AppleWebKit/605.1.15 Version/18.0 Safari/605.1.15"
+
+check() {
+  local expected=$1 label=$2 status
+  shift 2
+  status=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 15 "$@" 2>/dev/null) || status="000"
+  if [ "$status" = "$expected" ]; then
+    echo "ok    $label ($status)"
+  else
+    echo "FAIL  $label: $status instead of $expected"
+    return 1
+  fi
+}
+
+run_checks() {
+  local failed=0
+  check 200 "health check" "$base_url/up" || failed=1
+  check 401 "CalDAV request without credentials" -X PROPFIND -H "Depth: 0" "$base_url/caldav/smoke-test/calendar/" ||
+    failed=1
+  check 401 "Pipedrive webhook without credentials" -X POST -H "Content-Type: application/json" -d "{}" \
+    "$base_url/webhooks/pipedrive" || failed=1
+  check 401 "admin without credentials" -A "$browser" "$base_url/admin" || failed=1
+  return $failed
+}
+
+# The previous revision may still answer for a few seconds after a deploy
+for attempt in $(seq 1 "$attempts"); do
+  echo "Smoke test of $base_url, attempt $attempt/$attempts"
+  run_checks && exit 0
+  [ "$attempt" -lt "$attempts" ] && sleep 15
+done
+exit 1
