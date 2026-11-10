@@ -173,3 +173,16 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
     cancellation until it is past. Saving new CalDAV settings doesn't reset it; only disconnecting does, by deleting
     them all. The Pipedrive webhook keeps the old URL until the account's next onboarding, which replaces this
     bridge's webhooks on all its hosts. Amends 29 (`BRIDGE_BASE_URL`'s host is no longer the only allowed one).
+
+## Alerting (2026-11-10)
+
+35. **(you → me)** After the 2026-11-10 outage (37 minutes, and nothing told us):
+    - `CheckHealthJob`, now every 10 minutes, alerts when RDV-SP hasn't polled an active connection for 30 minutes
+      (it polls at least every 15). Failures before the app, in the proxies or middleware, only show as RDV-SP's
+      silence. Once per silence, then daily; by e-mail to `ALERT_EMAIL`, through `Rails.error` (Sentry's error
+      subscriber is on) and in the logs.
+    - `make deploy` waits for the new revision and runs `bin/smoke-test` on `BRIDGE_BASE_URL`: `/up` must answer 200,
+      and CalDAV, the webhook and the admin 401 without credentials. `/up` alone stayed green during the outage, since
+      it skips the request logging that broke. A failure turns the deploy job red; it doesn't roll back.
+    - Still needed, outside the code: an alert channel in production (`SENTRY_DSN`, or TEM + `ALERT_EMAIL`), and a
+      read-only Cockpit token to search the logs beyond the CLI's last 100 lines.
