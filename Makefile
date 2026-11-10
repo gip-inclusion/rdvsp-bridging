@@ -33,7 +33,7 @@ deploy: ## Build, push and redeploy the Scaleway container (needs SCW_REGISTRY a
 	scw container container redeploy "$$container_id" region=fr-par --wait
 	$(MAKE) smoke
 
-smoke: ## Check the deployed container from outside: bin/smoke-test on its BRIDGE_BASE_URL (needs a configured scw CLI)
-	@base_url=$$(scw container container list name=$(CONTAINER_NAME) -o json | jq -r '.[0].environment_variables.BRIDGE_BASE_URL'); \
-	test -n "$$base_url" && test "$$base_url" != "null" || { echo "error: no BRIDGE_BASE_URL on $(CONTAINER_NAME)"; exit 1; }; \
-	bin/smoke-test "$$base_url"
+smoke: ## Check the deployed container from outside, on its BRIDGE_BASE_URL and its Scaleway URL (needs a configured scw CLI)
+	@urls=$$(scw container container list name=$(CONTAINER_NAME) -o json | jq -r '.[0] | [.environment_variables.BRIDGE_BASE_URL, .public_endpoint] | map(select(. != null and . != "")) | unique | .[]'); \
+	test -n "$$urls" || { echo "error: no URL found for $(CONTAINER_NAME)"; exit 1; }; \
+	bin/smoke-test $$urls

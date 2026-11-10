@@ -2,9 +2,10 @@
 # Checks a deployed bridge from outside, through the platform's proxies: each kind of request RDV-SP and Pipedrive
 # make must reach the app and be refused for lack of credentials (401), not fail on the way (5xx). /up alone can't
 # tell: it skips the request logging that reads the client's address, which is what broke on 2026-11-10.
+# Takes every URL RDV-SP may use: BRIDGE_BASE_URL, and the platform's own URL that agents connected earlier keep.
 set -uo pipefail
 
-base_url="${1:?usage: bin/smoke-test https://bridge.example.fr}"
+[ $# -gt 0 ] || { echo "usage: bin/smoke-test https://bridge.example.fr [https://other-url…]"; exit 2; }
 attempts="${SMOKE_TEST_ATTEMPTS:-5}"
 browser="Mozilla/5.0 (Macintosh) AppleWebKit/605.1.15 Version/18.0 Safari/605.1.15"
 
@@ -21,7 +22,8 @@ check() {
 }
 
 run_checks() {
-  local failed=0
+  local base_url=$1 failed=0
+  echo "$base_url"
   check 200 "health check" "$base_url/up" || failed=1
   check 401 "CalDAV request without credentials" -X PROPFIND -H "Depth: 0" "$base_url/caldav/smoke-test/calendar/" ||
     failed=1
@@ -33,8 +35,12 @@ run_checks() {
 
 # The previous revision may still answer for a few seconds after a deploy
 for attempt in $(seq 1 "$attempts"); do
-  echo "Smoke test of $base_url, attempt $attempt/$attempts"
-  run_checks && exit 0
+  echo "Smoke test, attempt $attempt/$attempts"
+  failed=0
+  for base_url in "$@"; do
+    run_checks "$base_url" || failed=1
+  done
+  [ $failed -eq 0 ] && exit 0
   [ "$attempt" -lt "$attempts" ] && sleep 15
 done
 exit 1
