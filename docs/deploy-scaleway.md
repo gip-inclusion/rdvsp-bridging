@@ -16,7 +16,7 @@
   the CI `deploy` job on every push to `main` once the repository has `SCW_ACCESS_KEY` / `SCW_SECRET_KEY`
   (`SCW_ORG_ID`, `SCW_PROJECT_ID`, `SCW_REGISTRY` are already set). Merge by hand: a merge by Dependabot's auto-merge
   doesn't trigger the job. Both wait for the new revision, then run `bin/smoke-test` on the container's
-  `BRIDGE_BASE_URL` (also `make smoke`): a failure turns the job red but doesn't roll back.
+  `BRIDGE_BASE_URL` and its Scaleway URL (also `make smoke`): a failure turns the job red but doesn't roll back.
 - No alert channel yet: neither `SENTRY_DSN` nor `SMTP_*` + `ALERT_EMAIL` are set (no TEM domain in nova), so the
   alerts (an account failing, RDV-SP no longer polling a connection) only reach the logs.
 

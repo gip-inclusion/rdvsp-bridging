@@ -184,9 +184,12 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
       minutes in. Failures before the app, in the proxies or middleware, only show as RDV-SP's silence. Once per
       silence, then daily; by e-mail to `ALERT_EMAIL`, through `Rails.error` (Sentry's error subscriber is on) and
       in the logs. Failing accounts without an active connection are no longer alerted (the disabled sandbox).
-    - `make deploy` waits for the new revision and runs `bin/smoke-test` on `BRIDGE_BASE_URL`: `/up` must answer 200,
-      and CalDAV, the webhook and the admin 401 without credentials. `/up` alone stayed green during the outage, since
-      it skips the request logging that broke. A failure turns the deploy job red; it doesn't roll back.
+    - `make deploy` waits for the new revision and runs `bin/smoke-test` on `BRIDGE_BASE_URL` and on the container's
+      Scaleway URL, which agents connected earlier keep using (34): `/up` must answer 200, and CalDAV, the webhook
+      and the admin 401 without credentials. `/up` alone stayed green during the outage, since it skips the request
+      logging that broke. A failure turns the deploy job red; it doesn't roll back. Migrations, which run at boot
+      while the app serves traffic, now give up on a lock after 10 seconds (3 retries) instead of queueing every
+      query behind them.
     - **(you)** Sentry project `inclusion/rdvsp-bridging` (team `autometa`), `SENTRY_DSN` set on the container on
       2026-11-10. One issue alert: new issues and regressions only, at most once a day per issue, e-mail to
       Louis-Jean (Slack DM to be added by hand: Sentry didn't find the handle). Still missing: SMTP + `ALERT_EMAIL`
