@@ -14,8 +14,11 @@
   Louis-Jean's machine (keep it somewhere safe: the encryption keys can't be recovered from Scaleway).
 - Deploys: `make deploy` locally (`scw registry login`, `SCW_REGISTRY=rg.fr-par.scw.cloud/nova-container-registry`), or
   the CI `deploy` job on every push to `main` once the repository has `SCW_ACCESS_KEY` / `SCW_SECRET_KEY`
-  (`SCW_ORG_ID`, `SCW_PROJECT_ID`, `SCW_REGISTRY` are already set).
-- No e-mail yet (no TEM domain in nova): alerts are only logged until `SMTP_*` and `ALERT_EMAIL` are set.
+  (`SCW_ORG_ID`, `SCW_PROJECT_ID`, `SCW_REGISTRY` are already set). Merge by hand: a merge by Dependabot's auto-merge
+  doesn't trigger the job. Both wait for the new revision, then run `bin/smoke-test` on the container's
+  `BRIDGE_BASE_URL` and its Scaleway URL (also `make smoke`): a failure turns the job red but doesn't roll back.
+- No alert channel yet: neither `SENTRY_DSN` nor `SMTP_*` + `ALERT_EMAIL` are set (no TEM domain in nova), so the
+  alerts (an account failing, RDV-SP no longer polling a connection) only reach the logs.
 
 The rest of this page is the generic procedure.
 
@@ -75,6 +78,6 @@ Secrets go in the container's **secret** environment variables, not plain ones.
    username and password, pick the "Pipedrive – …" calendar. RDV-SP then sends every RDV of the agent from two weeks
    back: the bridge ignores them, since the agent usually has them already (`docs/preexisting-rdvs.md`). Tell the agent
    to **wait a minute before booking a test RDV**, otherwise it is ignored too.
-4. Check the connection page: "Dernier passage de RDV-SP" should update within 15 minutes, and "Rendez-vous reçus de
+4. Check the connection page: "Dernier passage de RDV-SP" should update within 10 minutes in the daytime, and "Rendez-vous reçus de
    RDV-SP" should count the existing RDVs as ignored. If they were pushed instead (an export delayed by RDV-SP), use
    "Ignorer les RDV reçus avant…"; an RDV ignored by mistake can be released with "Transmettre quand même".

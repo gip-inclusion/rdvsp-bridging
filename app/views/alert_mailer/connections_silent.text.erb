@@ -1,0 +1,9 @@
+Bonjour,
+
+RDV Service Public a manqué au moins <%= CheckHealthJob::MISSED_IMPORTS %> de ses passages prévus sur ces agendas (il passe toutes les 10 minutes de 7 h à 20 h, toutes les 30 minutes de 5 h à 7 h et de 20 h à 23 h 30) :
+
+<% @connections.each do |connection| %>
+- <%= connection.provider_user_name || connection.provider_user_id %> (agent <%= connection.agent_email || "?" %>, compte « <%= connection.account.name %> ») : dernier passage le <%= l(connection.last_seen_at.in_time_zone("Europe/Paris"), format: :long) %>
+<% end %>
+
+Si tous les agendas sont concernés, la passerelle est sans doute en erreur ou inaccessible : regardez les journaux du conteneur. Si un seul l'est, l'agent a peut-être déconnecté son agenda dans RDV Service Public.

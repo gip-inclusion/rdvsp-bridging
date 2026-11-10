@@ -173,3 +173,24 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
     cancellation until it is past. Saving new CalDAV settings doesn't reset it; only disconnecting does, by deleting
     them all. The Pipedrive webhook keeps the old URL until the account's next onboarding, which replaces this
     bridge's webhooks on all its hosts. Amends 29 (`BRIDGE_BASE_URL`'s host is no longer the only allowed one).
+
+## Alerting (2026-11-10)
+
+35. **(you → me)** After the 2026-11-10 outage (37 minutes, and nothing told us):
+    - `CheckHealthJob`, now every 10 minutes, alerts when RDV-SP missed two scheduled imports of an active
+      connection, 10 minutes of queueing allowed. RDV-SP's schedule (its `good_job.rb`, Paris time): every 10 minutes
+      from 07:00 to 19:50, every 30 from 05:00 to 06:30 and from 20:00 to 23:30, nothing at night, so a fixed threshold
+      would ring every night. Replayed on a week of real polls: one alert per connection, during the outage, ~25
+      minutes in. Failures before the app, in the proxies or middleware, only show as RDV-SP's silence. Once per
+      silence, then daily; by e-mail to `ALERT_EMAIL`, through `Rails.error` (Sentry's error subscriber is on) and
+      in the logs. Failing accounts without an active connection are no longer alerted (the disabled sandbox).
+    - `make deploy` waits for the new revision and runs `bin/smoke-test` on `BRIDGE_BASE_URL` and on the container's
+      Scaleway URL, which agents connected earlier keep using (34): `/up` must answer 200, and CalDAV, the webhook
+      and the admin 401 without credentials. `/up` alone stayed green during the outage, since it skips the request
+      logging that broke. A failure turns the deploy job red; it doesn't roll back. Migrations, which run at boot
+      while the app serves traffic, now give up on a lock after 10 seconds (3 retries) instead of queueing every
+      query behind them.
+    - **(you)** Sentry project `inclusion/rdvsp-bridging` (team `autometa`), `SENTRY_DSN` set on the container on
+      2026-11-10. One issue alert: new issues and regressions only, at most once a day per issue, e-mail to
+      Louis-Jean (Slack DM to be added by hand: Sentry didn't find the handle). Still missing: SMTP + `ALERT_EMAIL`
+      for the e-mails, and a read-only Cockpit token to search the logs beyond the CLI's last 100 lines.

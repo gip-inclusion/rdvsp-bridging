@@ -45,7 +45,7 @@ module RdvspBridging
     config.good_job.cron = {
       refresh_accounts: { cron: "*/5 * * * *", class: "RefreshAccountsJob" },
       rebuild_connections: { cron: "17 * * * *", class: "RebuildConnectionsJob" },
-      check_health: { cron: "*/30 * * * *", class: "CheckHealthJob" },
+      check_health: { cron: "*/10 * * * *", class: "CheckHealthJob" },
     }
 
     config.active_record.encryption.primary_key = ENV["ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY"]

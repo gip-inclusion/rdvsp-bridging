@@ -1,4 +1,4 @@
-.PHONY: install db run test lint autocorrect deploy
+.PHONY: install db run test lint autocorrect deploy smoke
 
 CONTAINER_NAME ?= rdvsp-bridging
 
@@ -30,4 +30,10 @@ deploy: ## Build, push and redeploy the Scaleway container (needs SCW_REGISTRY a
 	docker buildx build --platform linux/amd64 -t "$$SCW_REGISTRY/$(CONTAINER_NAME):latest" . --push
 	@container_id=$$(scw container container list name=$(CONTAINER_NAME) -o json | jq -r '.[0].id'); \
 	test -n "$$container_id" && test "$$container_id" != "null" || { echo "error: no container named $(CONTAINER_NAME)"; exit 1; }; \
-	scw container container redeploy "$$container_id" region=fr-par
+	scw container container redeploy "$$container_id" region=fr-par --wait
+	$(MAKE) smoke
+
+smoke: ## Check the deployed container from outside, on its BRIDGE_BASE_URL and its Scaleway URL (needs a configured scw CLI)
+	@urls=$$(scw container container list name=$(CONTAINER_NAME) -o json | jq -r '.[0] | [.environment_variables.BRIDGE_BASE_URL, .public_endpoint] | map(select(. != null and . != "")) | unique | .[]'); \
+	test -n "$$urls" || { echo "error: no URL found for $(CONTAINER_NAME)"; exit 1; }; \
+	bin/smoke-test $$urls

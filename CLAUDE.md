@@ -14,7 +14,8 @@ We **cannot change RDV-SP** (no PR). Instead the bridge **impersonates a CalDAV 
 connect "un agenda CalDAV" (Synchronisation → Connecter mon agenda via Caldav: URL + username + password, HTTP Basic).
 The agent pastes credentials issued by the bridge; RDV-SP then:
 
-- imports busy times: `Caldav::ImportAbsencesFromCaldavJob` (cron every 15 min + on each slot search involving the
+- imports busy times: `Caldav::ImportAbsencesFromCaldavJob` (cron, Paris time: every 10 min from 07:00 to 19:50,
+  every 30 min from 05:00 to 06:30 and from 20:00 to 23:30, none at night; plus on each slot search involving the
   agent, debounced 1/min) → `ExternalCalendarEvent` → subtracted from opening hours (`plages d'ouverture`);
 - exports RDVs: `Caldav::ExportRdvToCaldavJob` → `PUT <agenda>/<rdv-uuid>.ics`, `PUT` again on update, `DELETE` on removal.
 
