@@ -14,6 +14,15 @@ RSpec.describe "Admin" do
     Admin::BaseController::RATE_LIMIT_STORE.clear
   end
 
+  it "speaks French, durations included" do
+    connection = create(:connection, last_seen_at: 5.minutes.ago)
+    auth = ActionController::HttpAuthentication::Basic.encode_credentials("admin", "admin")
+
+    get "/admin/connections/#{connection.id}", headers: { "Authorization" => auth, "User-Agent" => browser }
+
+    expect(response.body).to include("Dernier passage de RDV-SP : il y a 5 minutes")
+  end
+
   it "builds the CalDAV URL from the configured base URL, not from the request's host" do
     connection = create(:connection)
     auth = ActionController::HttpAuthentication::Basic.encode_credentials("admin", "admin")
