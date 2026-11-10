@@ -56,6 +56,15 @@ RSpec.describe Rdvs::Receive do
     end
   end
 
+  it "schedules the removal of the activity an ignored RDV still has" do
+    rdv = create(:rdv, connection:, ignored_at: 1.day.ago, payload: nil, provider_object_id: "77")
+
+    receive(rdv.href_name)
+
+    expect(rdv.reload).to have_attributes(state: "pending", payload: nil)
+    expect(PushRdvJob).to have_been_enqueued.with(rdv)
+  end
+
   it "learns the RDV-SP id of an RDV ignored before its id was recorded" do
     rdv = create(:rdv, connection:, ignored_at: 1.day.ago, payload: nil, rdvsp_id: nil)
 

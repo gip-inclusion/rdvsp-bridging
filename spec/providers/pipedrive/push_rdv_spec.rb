@@ -65,6 +65,31 @@ RSpec.describe Pipedrive::PushRdv do
     expect(rdv.reload.state).to eq("synced")
   end
 
+  context "when the RDV is ignored, as it existed before the connection" do
+    before { rdv.update!(ignored_at: Time.current, payload: nil) }
+
+    it "removes its activity and forgets it, never creating one" do
+      rdv.update!(provider_object_id: "77")
+      delete = stub_request(:delete, "#{api}/api/v2/activities/77").to_return_json(body: { data: { id: 77 } })
+
+      described_class.call(rdv:)
+
+      expect(delete).to have_been_requested
+      expect(rdv.reload).to have_attributes(provider_object_id: nil, state: "synced")
+    end
+
+    it "accepts that its activity was already deleted by hand" do
+      rdv.update!(provider_object_id: "77")
+      stub_request(:delete, "#{api}/api/v2/activities/77")
+        .to_return(status: 400, body: { success: false, error: "Activity is already deleted" }.to_json)
+      stub_request(:get, "#{api}/api/v2/activities/77").to_return_json(body: { data: { id: 77, is_deleted: true } })
+
+      described_class.call(rdv:)
+
+      expect(rdv.reload).to have_attributes(provider_object_id: nil, state: "synced")
+    end
+  end
+
   it "deletes the activity of a cancelled RDV" do
     rdv.update!(provider_object_id: "77", cancelled_at: Time.current)
     request = stub_request(:delete, "#{api}/api/v2/activities/77").to_return_json(body: { data: { id: 77 } })
