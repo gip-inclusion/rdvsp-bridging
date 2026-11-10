@@ -78,6 +78,6 @@ Secrets go in the container's **secret** environment variables, not plain ones.
    username and password, pick the "Pipedrive – …" calendar. RDV-SP then sends every RDV of the agent from two weeks
    back: the bridge ignores them, since the agent usually has them already (`docs/preexisting-rdvs.md`). Tell the agent
    to **wait a minute before booking a test RDV**, otherwise it is ignored too.
-4. Check the connection page: "Dernier passage de RDV-SP" should update within 15 minutes, and "Rendez-vous reçus de
+4. Check the connection page: "Dernier passage de RDV-SP" should update within 10 minutes in the daytime, and "Rendez-vous reçus de
    RDV-SP" should count the existing RDVs as ignored. If they were pushed instead (an export delayed by RDV-SP), use
    "Ignorer les RDV reçus avant…"; an RDV ignored by mistake can be released with "Transmettre quand même".
