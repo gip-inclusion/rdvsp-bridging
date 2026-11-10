@@ -157,4 +157,5 @@ fr:
       default: "%-d %B %Y %Hh %Mmin %Ss"
       long: "%A %-d %B %Y %Hh%M"
       short: "%A %-d/%m à %Hh%M"
+      seconds: "%d/%m/%Y %H:%M:%S"
     pm: pm

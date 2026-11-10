@@ -10,6 +10,8 @@ class Rdv < ApplicationRecord
   encrypts :payload
 
   scope :ignored, -> { where.not(ignored_at: nil) }
+  scope :cancelled, -> { where.not(cancelled_at: nil) }
+  scope :transmitted, -> { where(ignored_at: nil, cancelled_at: nil).where.not(provider_object_id: nil) }
 
   def cancelled? = cancelled_at.present?
 

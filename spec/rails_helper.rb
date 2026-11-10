@@ -23,4 +23,6 @@ RSpec.configure do |config|
   config.include ActiveJob::TestHelper
   config.include ActiveSupport::Testing::TimeHelpers
   config.filter_run_excluding :live unless ENV["LIVE"]
+  # The admin's rate limit counts every request of the process, whichever spec made it
+  config.before(type: :request) { Admin::BaseController::RATE_LIMIT_STORE.clear }
 end

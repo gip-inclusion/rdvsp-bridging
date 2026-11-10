@@ -21,5 +21,8 @@ Rails.application.routes.draw do
       post :reset_password, on: :member
       post :rebuild, on: :member
     end
+    resources :rdvs, only: [] do
+      post :release, on: :member
+    end
   end
 end

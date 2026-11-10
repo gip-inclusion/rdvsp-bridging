@@ -25,13 +25,14 @@
   <p><%= link_to "Connecter un utilisateur Pipedrive", new_admin_account_connection_path(@account) %></p>
 <% end %>
 <table>
-  <tr><th>Utilisateur / agenda</th><th>Agent RDV-SP</th><th>Dernier passage de RDV-SP</th><th>Occupations</th></tr>
+  <tr><th>Utilisateur / agenda</th><th>Agent RDV-SP</th><th>Dernier passage de RDV-SP</th><th>Occupations</th><th>Ignorés</th></tr>
   <% @account.connections.each do |connection| %>
     <tr>
       <td><%= link_to connection.provider_user_name || connection.provider_user_id, admin_connection_path(connection) %></td>
       <td><%= connection.agent_email %></td>
       <td><%= connection.last_seen_at ? "il y a #{time_ago_in_words(connection.last_seen_at)}" : "jamais" %></td>
       <td><%= connection.busy_blocks.live.count %></td>
+      <td><%= connection.rdvs.ignored.count %></td>
     </tr>
   <% end %>
 </table>
