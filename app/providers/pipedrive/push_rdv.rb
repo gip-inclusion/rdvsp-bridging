@@ -25,6 +25,8 @@ module Pipedrive
       client.delete_activity(@rdv.provider_object_id)
     rescue Pipedrive::NotFoundError
       nil
+    rescue Pipedrive::Error
+      raise unless activity_deleted?
     end
 
     def upsert_activity
@@ -41,6 +43,15 @@ module Pipedrive
       activity unless activity["is_deleted"]
     rescue Pipedrive::NotFoundError
       nil
+    rescue Pipedrive::Error
+      raise unless activity_deleted?
+    end
+
+    # Pipedrive refuses to update (403) or delete (400) a deleted activity instead of answering 404
+    def activity_deleted?
+      client.activity(@rdv.provider_object_id)["is_deleted"]
+    rescue Pipedrive::NotFoundError
+      true
     end
 
     def person_id
