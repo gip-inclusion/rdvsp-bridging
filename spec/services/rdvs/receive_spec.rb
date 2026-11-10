@@ -46,6 +46,22 @@ RSpec.describe Rdvs::Receive do
       expect(rdv).to have_attributes(ignored?: true, cancelled?: true, payload: nil)
       expect(PushRdvJob).not_to have_been_enqueued
     end
+
+    it "ignores later an RDV that existed before, for RDV-SP numbers its RDVs in booking order" do
+      receive(rdvsp_id: 500)
+      travel 2.minutes
+
+      expect(receive(rdvsp_id: 400)).to be_ignored
+      expect(receive(rdvsp_id: 501)).not_to be_ignored
+    end
+  end
+
+  it "learns the RDV-SP id of an RDV ignored before its id was recorded" do
+    rdv = create(:rdv, connection:, ignored_at: 1.day.ago, payload: nil, rdvsp_id: nil)
+
+    receive(rdv.href_name, rdvsp_id: 700)
+
+    expect(connection.below_baseline_watermark?(700)).to be(true)
   end
 
   it "keeps pushing an RDV it already pushed when RDV-SP re-sends it after another connection test" do

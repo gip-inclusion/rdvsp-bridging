@@ -113,14 +113,25 @@ RSpec.describe "RDV Service Public's CalDAV client against the bridge" do
     let(:old_rdvs) { Array.new(3) { SecureRandom.uuid } }
     let(:starts_at) { 3.days.from_now.change(hour: 9) }
 
-    def export(uuid, **) = rdvsp.export_rdv(uuid, starts_at:, ends_at: starts_at + 30.minutes, **)
+    def export(uuid, rdvsp_id: 900, **)
+      link = "Voir sur RDV Service Public: https://rdv.example.fr/admin/organisations/1/rdvs/#{rdvsp_id}"
+      rdvsp.export_rdv(uuid, starts_at:, ends_at: starts_at + 30.minutes, description: link, **)
+    end
 
     def pushes = enqueued_jobs.count { it["job_class"] == "PushRdvJob" }
 
     before do
       rdvsp.configure!(calendar_url)
-      old_rdvs.each { export(it) }
+      old_rdvs.each_with_index { |uuid, index| export(uuid, rdvsp_id: 100 + index) }
       wait_for_the_start_up_window
+    end
+
+    it "also ignores an older RDV that RDV-SP only sends when someone touches it" do
+      export(older = SecureRandom.uuid, rdvsp_id: 50)
+      export(SecureRandom.uuid, rdvsp_id: 200)
+
+      expect(connection.rdvs.find_by(uid: older)).to be_ignored
+      expect(pushes).to eq(1)
     end
 
     it "ignores the bulk export, without RDV-SP noticing, and pushes the RDVs booked afterwards" do

@@ -51,6 +51,18 @@ RSpec.describe Connection do
     end
   end
 
+  describe "watermark" do
+    it "covers the RDV-SP ids up to the highest one ignored, which it never lowers" do
+      expect(connection.below_baseline_watermark?(1)).to be(false)
+
+      [10, 5, nil].each { connection.raise_baseline_watermark!(it) }
+
+      expect(connection.below_baseline_watermark?(10)).to be(true)
+      expect(connection.below_baseline_watermark?(11)).to be(false)
+      expect(connection.below_baseline_watermark?(nil)).to be(false)
+    end
+  end
+
   it "stores a SHA-256 digest of the password, never the password" do
     expect(connection.reload.password_digest).to eq(OpenSSL::Digest::SHA256.hexdigest(password))
     expect(connection.attributes.values).not_to include(password)

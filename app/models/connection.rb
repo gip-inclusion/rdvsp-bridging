@@ -64,6 +64,19 @@ class Connection < ApplicationRecord
     extended == 1
   end
 
+  # RDV-SP numbers RDVs in booking order, so an RDV at or below the highest id ignored on this connection existed
+  # before it too: a late retry of the bulk export, or an older RDV someone just touched
+  def below_baseline_watermark?(rdvsp_id)
+    watermark = self.class.where(id:).pick(:baseline_max_rdvsp_id)
+    rdvsp_id.present? && watermark.present? && rdvsp_id <= watermark
+  end
+
+  def raise_baseline_watermark!(rdvsp_id)
+    return if rdvsp_id.nil?
+
+    self.class.where(id:).update_all(["baseline_max_rdvsp_id = GREATEST(baseline_max_rdvsp_id, ?)", rdvsp_id])
+  end
+
   private
 
   # Digests from before SHA-256 were bcrypt: checked once, then replaced
