@@ -42,6 +42,15 @@ RSpec.describe "CalDAV server" do
     expect(Pipedrive::RefreshAccount).to have_received(:call)
   end
 
+  it "opens the start-up window on RDV-SP's connection test, without storing the test event" do
+    test_event = "#{connection.calendar_path}rdvsp-connection-test-#{SecureRandom.uuid}.ics"
+    put test_event, params: "BEGIN:VCALENDAR", headers: { "Authorization" => auth }
+
+    expect(response).to have_http_status(:created)
+    expect(connection.reload.baseline_until).to be_within(1.second).of(1.minute.from_now)
+    expect(connection.rdvs).to be_empty
+  end
+
   it "records when RDV-SP last came" do
     process :propfind, connection.calendar_path, headers: { "Depth" => "0", "Authorization" => auth }
 

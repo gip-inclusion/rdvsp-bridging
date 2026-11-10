@@ -9,7 +9,14 @@ class Rdv < ApplicationRecord
   serialize :payload, coder: JSON
   encrypts :payload
 
+  scope :ignored, -> { where.not(ignored_at: nil) }
+
   def cancelled? = cancelled_at.present?
+
+  # Existed before the connection (see Connection#open_baseline!): never pushed to the provider
+  def ignored? = ignored_at.present?
+
+  def needs_push? = !ignored?
 
   def regenerate_etag = self.etag = %("#{SecureRandom.hex(8)}")
 end

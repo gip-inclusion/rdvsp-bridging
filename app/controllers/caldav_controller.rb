@@ -155,6 +155,7 @@ class CaldavController < ActionController::API
   end
 
   def created_connection_test
+    connection.open_baseline!
     response.headers["ETag"] = %("#{SecureRandom.hex(8)}")
     head :created
   end

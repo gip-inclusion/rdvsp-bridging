@@ -17,4 +17,43 @@ RSpec.describe Rdvs::Receive do
     expect(rdv).to have_attributes(rdvsp_id: 1234, state: "pending", starts_at:)
     expect(PushRdvJob).to have_been_enqueued.with(rdv)
   end
+
+  context "when RDV-SP has just tested the connection" do
+    before { connection.open_baseline! }
+
+    it "ignores the RDVs of its bulk export: stored without their content and never pushed" do
+      rdv = receive
+
+      expect(rdv).to have_attributes(ignored?: true, payload: nil, state: "synced", starts_at:)
+      expect(PushRdvJob).not_to have_been_enqueued
+    end
+
+    it "pushes the RDVs received once the window has closed" do
+      travel 61.seconds
+
+      expect(receive).not_to be_ignored
+      expect(PushRdvJob).to have_been_enqueued
+    end
+
+    it "keeps an ignored RDV ignored through its updates and cancellation" do
+      href_name = "#{SecureRandom.uuid}.ics"
+      receive(href_name)
+      travel 2.minutes
+
+      receive(href_name)
+      rdv = receive(href_name, status: "CANCELLED")
+
+      expect(rdv).to have_attributes(ignored?: true, cancelled?: true, payload: nil)
+      expect(PushRdvJob).not_to have_been_enqueued
+    end
+  end
+
+  it "keeps pushing an RDV it already pushed when RDV-SP re-sends it after another connection test" do
+    href_name = "#{SecureRandom.uuid}.ics"
+    receive(href_name)
+    connection.open_baseline!
+
+    expect(receive(href_name)).not_to be_ignored
+    expect(PushRdvJob).to have_been_enqueued.twice
+  end
 end
