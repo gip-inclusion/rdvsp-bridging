@@ -87,7 +87,7 @@ Rails.application.configure do
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [:id]
 
-  # Only BRIDGE_BASE_URL's host (Host and X-Forwarded-Host), except for the platform's health checks
-  config.hosts = [URI(config.x.base_url).host]
+  # Only the bridge's hosts (Host and X-Forwarded-Host), except for the platform's health checks
+  config.hosts = config.x.allowed_hosts
   config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end

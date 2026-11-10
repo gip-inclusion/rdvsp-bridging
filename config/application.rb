@@ -60,5 +60,8 @@ module RdvspBridging
 
     # Public URL of the bridge, for the CalDAV URLs, webhooks and OAuth redirects (never the request's Host header)
     config.x.base_url = ENV.fetch("BRIDGE_BASE_URL", "http://localhost:3010").delete_suffix("/")
+    # Hosts accepted in production: BRIDGE_BASE_URL's, and BRIDGE_ALLOWED_HOSTS (comma-separated)
+    allowed_hosts = ENV.fetch("BRIDGE_ALLOWED_HOSTS", "").split(",").map(&:strip)
+    config.x.allowed_hosts = [URI(config.x.base_url).host, *allowed_hosts].compact_blank.uniq
   end
 end
