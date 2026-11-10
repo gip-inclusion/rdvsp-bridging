@@ -54,6 +54,10 @@ module RdvspBridging
 
     config.i18n.default_locale = :fr
 
+    # Scaleway's load balancers forward from the shared address space (100.64.0.0/10) and leave the last hop out of
+    # `Forwarded`: untrusted, they make the two headers name different clients, which Rails 8.1.4.1 rejects as spoofing
+    config.action_dispatch.trusted_proxies = ActionDispatch::RemoteIp::TRUSTED_PROXIES + [IPAddr.new("100.64.0.0/10")]
+
     # Public URL of the bridge, for the CalDAV URLs, webhooks and OAuth redirects (never the request's Host header)
     config.x.base_url = ENV.fetch("BRIDGE_BASE_URL", "http://localhost:3010").delete_suffix("/")
   end

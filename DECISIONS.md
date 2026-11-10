@@ -159,3 +159,7 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
     activity when a `PATCH` or `DELETE` fails: deleted means gone, anything else is raised as before.
 32. **(me)** The admin had no French translations (`time_ago_in_words` showed "Translation missing"): Rails' French
     translations are in `config/locales/fr.yml` as in RDV-SP, and missing translations raise in development and test.
+33. **(me)** Rails 8.1.4.1 rejects requests whose `Forwarded` and `X-Forwarded-For` headers name different clients.
+    Scaleway's load balancers forward from 100.64.0.0/10 and leave the last hop out of `Forwarded`, so every CalDAV
+    and webhook request failed after the deploy of 2026-11-10 (16:47 to the fix). That range is now a trusted proxy:
+    both headers then name the real client, which `remote_ip` (and the admin rate limit) now returns.
