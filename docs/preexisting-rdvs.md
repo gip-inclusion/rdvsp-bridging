@@ -67,8 +67,9 @@ raised as before.
 Connection page, "Rendez-vous" section:
 
 - last connection test, window end, watermark; counts of RDVs transmitted, ignored, failed, cancelled;
-- a warning when the last window closed without ignoring anything (normal if the agent had no RDV, otherwise the bulk
-  export came late);
+- how many existing RDVs were ignored after the last connection test (zero after a first setup means the agent had no
+  RDV, or the bulk export came late; after a re-save it is normal). Not a warning, since a re-save would raise it
+  every time;
 - the latest RDVs (received at, starts at, status, RDV-SP id; never subject, description or location) with
   "Transmettre quand même" on ignored ones: the flag is cleared and the RDV is pushed at RDV-SP's next PUT of it (we
   keep no payload for ignored RDVs);

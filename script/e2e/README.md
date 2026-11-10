@@ -19,6 +19,7 @@ rv run bundle install && rv run bin/rails db:create db:schema:load db:seed
 # 3. RDV-SP side
 rv run bin/rails runner <rdvsp-bridging>/script/e2e/rdvsp_setup.rb creds.json ctx.json   # connect + import + slots
 rv run bin/rails runner <rdvsp-bridging>/script/e2e/rdvsp_probe_days.rb ctx.json         # slots over two weeks
+sleep 70  # RDVs received in the minute after the connection are taken for existing ones and ignored
 rv run bin/rails runner <rdvsp-bridging>/script/e2e/rdvsp_rdv.rb ctx.json create rdv-id.txt
 rv run bin/rails runner <rdvsp-bridging>/script/e2e/rdvsp_rdv.rb ctx.json move rdv-id.txt
 rv run bin/rails runner <rdvsp-bridging>/script/e2e/rdvsp_rdv.rb ctx.json import rdv-id.txt

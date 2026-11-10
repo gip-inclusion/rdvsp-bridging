@@ -140,3 +140,22 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
     - `BRIDGE_BASE_URL` is the only source of public URLs (`config.x.base_url`) and, in production, the only allowed
       host (`Host` and `X-Forwarded-Host`; `/up` excluded for the platform's probes).
 
+## RDVs that existed before the connection (2026-11-10)
+
+30. **(you → me)** The sync is for RDVs booked **after** the agent connects. RDV-SP PUTs every RDV from two weeks back
+    when the agent saves their CalDAV settings, and the first partner's agent already had them all in their calendar:
+    27 duplicates. An RDV is now classified once, at the first PUT of its href, as *ignored* (`rdvs.ignored_at`) when
+    it arrives in the start-up window (opened by each connection test, closed after a minute without a never-seen RDV,
+    at most 15 min) or when its RDV-SP id (from the "Voir sur" link) is at or below the highest one ignored on the
+    connection (catches late retries and older RDVs touched later). Ignored RDVs are stored and answered as before but
+    keep no content and never reach the provider; an activity they still have is removed. The ICS has no booking date,
+    hence the heuristic; design and product answers in `docs/preexisting-rdvs.md`. Known limits: an RDV booked in the
+    minute after a connection test is ignored (admin: "Transmettre quand même", pushed at its next change), and a bulk
+    export delayed past the window is pushed (admin: "Ignorer les RDV reçus avant…", with a preview). Amends Technical
+    18 (the connection test's time is now recorded) and narrows Product 5 to RDVs that aren't ignored.
+31. **(me)** Pipedrive doesn't answer 404 for a deleted activity: `PATCH` gets **403** "Cannot update a deleted
+    activity." (which our client read as a refused token) and `DELETE` gets **400** "Activity is already deleted"
+    (verified 2026-11-10). So the "recreate it" of Product 5 never worked in production. `PushRdv` now re-fetches the
+    activity when a `PATCH` or `DELETE` fails: deleted means gone, anything else is raised as before.
+32. **(me)** The admin had no French translations (`time_ago_in_words` showed "Translation missing"): Rails' French
+    translations are in `config/locales/fr.yml` as in RDV-SP, and missing translations raise in development and test.
