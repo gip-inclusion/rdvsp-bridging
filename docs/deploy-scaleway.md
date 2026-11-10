@@ -4,7 +4,9 @@
 
 - Project **nova**, Serverless Container **`rdvsp-bridging`** in namespace `nova` (1 instance, 1 GB, 560 mVCPU,
   HTTPS only, startup/liveness probes on `/up`).
-- URL: <https://novarw2u9ckv-rdvsp-bridging.functions.fnc.fr-par.scw.cloud> (no custom domain yet).
+- URL: <https://pont-rdv.inclusion.gouv.fr> (CNAME in `gip-inclusion/infrastructure`). The container's own URL,
+  <https://novarw2u9ckv-rdvsp-bridging.functions.fnc.fr-par.scw.cloud>, stays accepted (`BRIDGE_ALLOWED_HOSTS`):
+  the agents connected before the domain, the RDVs RDV-SP exported through it and the Pipedrive webhook use it.
 - Image: `rg.fr-par.scw.cloud/nova-container-registry/rdvsp-bridging:latest`.
 - Database `rdvsp_bridging` (user `rdvsp_bridging`, `permission=all` on that database only) on the shared
   **`proto-db`** instance (PostgreSQL 16).
@@ -42,7 +44,9 @@ docker push rg.fr-par.scw.cloud/<namespace>/rdvsp-bridging:<tag>
 - Port: `8080` (Scaleway sets `PORT`, which is reserved), min scale **1**, max scale 1 for now (GoodJob runs in-process; more instances are
   fine for jobs but not needed).
 - Health check: `GET /up`.
-- Custom domain with HTTPS (e.g. `rdvsp-bridging.inclusion.gouv.fr`). TLS ends at Scaleway; the app assumes SSL.
+- Custom domain with HTTPS: a CNAME to the container's URL, then
+  `scw container domain create container-id=<id> hostname=<domain>` once it resolves (Scaleway checks it and issues
+  the certificate). TLS ends at Scaleway; the app assumes SSL.
 
 ### Environment variables
 
@@ -51,7 +55,8 @@ docker push rg.fr-par.scw.cloud/<namespace>/rdvsp-bridging:<tag>
 | `DATABASE_URL` | see above |
 | `SECRET_KEY_BASE` | `openssl rand -hex 64` |
 | `ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY`, `..._DETERMINISTIC_KEY`, `..._KEY_DERIVATION_SALT` | `bin/rails db:encryption:init`; **losing them loses every stored Pipedrive token** |
-| `BRIDGE_BASE_URL` | public `https://…` URL; the only host accepted in production, the base of every URL shown or registered, and enables Pipedrive webhook subscription at onboarding |
+| `BRIDGE_BASE_URL` | public `https://…` URL; its host is accepted in production, it is the base of every URL shown or registered, and enables Pipedrive webhook subscription at onboarding |
+| `BRIDGE_ALLOWED_HOSTS` (optional) | other hosts accepted in production, comma-separated. Keep a host the bridge was reached at for as long as RDV-SP may use it (`DECISIONS.md` 34). Onboarding replaces this bridge's webhooks on all its hosts |
 | `ADMIN_PASSWORD` | HTTP basic auth for `/admin` (user `admin`) |
 | `ALERT_EMAIL` | our address for sync alerts |
 | `MAIL_FROM` | sender address (default `ne-pas-repondre@inclusion.gouv.fr`) |

@@ -163,3 +163,13 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
     Scaleway's load balancers forward from 100.64.0.0/10 and leave the last hop out of `Forwarded`, so every CalDAV
     and webhook request failed after the deploy of 2026-11-10 (16:47 to the fix). That range is now a trusted proxy:
     both headers then name the real client, which `remote_ip` (and the admin rate limit) now returns.
+
+## Custom domain (2026-11-10)
+
+34. **(you → me)** The bridge is served at **pont-rdv.inclusion.gouv.fr** (CNAME in `gip-inclusion/infrastructure`,
+    custom domain on the container), which becomes `BRIDGE_BASE_URL`. The container's Scaleway host stays accepted
+    through `BRIDGE_ALLOWED_HOSTS` for months, not days: RDV-SP keeps the CalDAV URL each agent pasted, and the
+    absolute URL of every RDV it exported (`agents_rdvs.caldav_url`), where it sends that RDV's updates and
+    cancellation until it is past. Saving new CalDAV settings doesn't reset it; only disconnecting does, by deleting
+    them all. The Pipedrive webhook keeps the old URL until the account's next onboarding, which replaces this
+    bridge's webhooks on all its hosts. Amends 29 (`BRIDGE_BASE_URL`'s host is no longer the only allowed one).
