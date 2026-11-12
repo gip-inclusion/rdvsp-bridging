@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe "RDV-SP authorization by a partner's agent", :rdvsp do
   let(:browser) { { "User-Agent" => "Mozilla/5.0 (Macintosh) AppleWebKit/605.1.15 Version/18.0 Safari/605.1.15" } }
-  let(:account) { create(:account, name: "Massajobs") }
+  let(:account) { create(:account, name: "Association Exemple") }
   let(:token) { account.signed_id(purpose: :rdvsp_authorization, expires_in: 7.days) }
   let(:redirect_uri) { "#{Rails.configuration.x.base_url}/rdvsp/callback" }
 
@@ -15,7 +15,7 @@ RSpec.describe "RDV-SP authorization by a partner's agent", :rdvsp do
     get "/rdvsp/authorize/#{token}", headers: browser
 
     expect(response).to have_http_status(:ok)
-    expect(response.body).to include("Massajobs", "créer des usagers", "Continuer vers RDV Service Public")
+    expect(response.body).to include("Association Exemple", "créer des usagers", "Continuer vers RDV Service Public")
   end
 
   it "refuses an expired or tampered link" do

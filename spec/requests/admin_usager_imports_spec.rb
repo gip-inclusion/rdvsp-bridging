@@ -34,7 +34,7 @@ RSpec.describe "Admin: RDV-SP usager import", :rdvsp do
 
   it "previews an import with counts only" do
     create(:rdvsp_authorization, account:)
-    stub_rdvsp_organisations([{ id: 42, name: "Massajobs Paris" }])
+    stub_rdvsp_organisations([{ id: 42, name: "Association Exemple Paris" }])
     stub_rdvsp_organisation_users(42, [])
     stub_pipedrive_fields
     stub_pipedrive_persons([pipedrive_person(1), pipedrive_person(2, first_name: nil)])
@@ -42,7 +42,7 @@ RSpec.describe "Admin: RDV-SP usager import", :rdvsp do
     get "/admin/accounts/#{account.id}/usager_imports/new", params: preview_params, headers: headers
 
     expect(response).to have_http_status(:ok)
-    expect(response.body).to include("Massajobs Paris", "Type → Accompagnée", "Importer 1 usager")
+    expect(response.body).to include("Association Exemple Paris", "Type → Accompagnée", "Importer 1 usager")
     expect(response.body).not_to include("Lovelace")
   end
 

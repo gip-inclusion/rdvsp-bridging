@@ -4,18 +4,19 @@ Status: agreed and built on 2026-11-12, branch `rdvsp-usager-import` (decision 3
 
 ## Why
 
-Massajobs keeps its beneficiaries in Pipedrive. Its agents book them in RDV-SP, where each usager must be typed in by
-hand; they want the names to autocomplete instead. RDV-SP has no usager import in its UI, but its API creates usagers
+A partner keeps its beneficiaries in its own tool (Pipedrive). Its agents book them in RDV-SP, where each usager must be
+typed in by hand. The bridge should transfer them from the source to RDV-SP, and, with its own OAuth application at
+RDV-SP, prepare the use of RDV plans later. RDV-SP has no usager import in its UI, but its API creates usagers
 (`POST /api/v1/users`) on behalf of an agent who authorized an OAuth application. Until now the bridge held no RDV-SP
 credential at all.
 
 ## Authorization
 
-RDV-SP registers OAuth applications by hand (`scripts/create_oauth_application.rb`): one on the demo instance
-(redirect `http://localhost:3010/rdvsp/callback`), one in production (`https://pont-rdv.inclusion.gouv.fr/rdvsp/callback`),
-`grants_autonomous_signup` off. Doorkeeper, `authorization_code` only, a single `write` scope, access tokens of 2 hours
-with refresh tokens. Configuration: `RDVSP_URL`, `RDVSP_OAUTH_CLIENT_ID`, `RDVSP_OAUTH_CLIENT_SECRET`; the feature is
-hidden while any of them is missing.
+RDV-SP registers OAuth applications by hand (`scripts/create_oauth_application.rb`), with
+`grants_autonomous_signup` off: one on the demo instance, redirecting to `http://localhost:3010/rdvsp/callback`, one in
+production, redirecting to `https://pont-rdv.inclusion.gouv.fr/rdvsp/callback`. Doorkeeper, `authorization_code` only,
+a single `write` scope, access tokens of 2 hours with refresh tokens. Configuration: `RDVSP_URL`,
+`RDVSP_OAUTH_CLIENT_ID`, `RDVSP_OAUTH_CLIENT_SECRET`; the feature is hidden while any of them is missing.
 
 The admin is behind the staff password, so the partner's agent can't click a button there. Instead:
 
@@ -43,9 +44,9 @@ On the account's admin page, once authorized:
 
 1. **Settings.** The RDV-SP organisation (`GET /api/v1/organisations`, those of the authorizing agent); the Pipedrive
    field and value that mark a beneficiary (a select of the options of every set or single-option person field, e.g.
-   "⚠️ Type de Contact" → "Personne accompagnée"); "actif depuis" (default: January 1st of last year). A person is
+   a "contact type" field → its "beneficiary" option); "actif depuis" (default: January 1st of last year). A person is
    active when their last activity, next activity or creation is on or after that date (`last_activity_date` is only
-   in Pipedrive's v1 API: `update_time` was bumped on every Massajobs person by a bulk edit).
+   in Pipedrive's v1 API: `update_time` was bumped on every person of the first partner by a bulk edit).
 2. **Preview**, computed in the request, nothing written. Counts only, no names:
    - beneficiaries selected;
    - set aside for lack of a first or last name (RDV-SP requires both);
@@ -59,7 +60,8 @@ On the account's admin page, once authorized:
    `external_reference: { external_id: <Pipedrive person id>, external_url: <person page in Pipedrive> }`. RDV-SP keeps
    that reference unique per application and territory, which guards against duplicates on its side too. The plan
    adds each person to create to its index, so two Pipedrive persons with the same e-mail don't both get created.
-4. **Results.** `ImportedUsager` keeps the Pipedrive person id ↔ RDV-SP usager id (and organisation): no personal data.
+4. **Results.** `ImportedUsager` keeps the Pipedrive person id ↔ RDV-SP usager id (and organisation): no personal
+   data.
    When RDV-SP rejects only the e-mail and/or the phone (422), the usager is created again without them. Other
    rejections are counted by attribute name, never by value. An `external_id` already taken counts as already imported.
    The account page lists the imports with their state and counts. Running it again creates only the new ones.
@@ -70,7 +72,7 @@ Logs and errors carry counts and ids only, never names, e-mails or phones.
 
 - No continuous sync: new beneficiaries arrive when staff run the import again. Usagers already created are never
   updated.
-- The legacy field "❗️Type de contact (ne plus utiliser)" isn't read (2 more Massajobs beneficiaries).
+- Only one field option marks a beneficiary: a legacy field holding the same option isn't read.
 - No link between an RDV pushed by RDV-SP and the imported usager's Pipedrive person: that needs RDV-SP to send the
   usager's id or external reference (RDV Plans have one).
 
