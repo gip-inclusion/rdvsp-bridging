@@ -7,6 +7,9 @@ class Account < ApplicationRecord
   encrypts :access_token
 
   has_many :connections, dependent: :destroy
+  has_one :rdvsp_authorization, dependent: :destroy
+  has_many :imported_usagers, dependent: :delete_all
+  has_many :usager_imports, dependent: :delete_all
 
   validates :provider, inclusion: { in: PROVIDERS }
   validates :name, :api_token, presence: true

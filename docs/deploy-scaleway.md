@@ -64,6 +64,7 @@ docker push rg.fr-par.scw.cloud/<namespace>/rdvsp-bridging:<tag>
 | `ALERT_EMAIL` | our address for sync alerts |
 | `MAIL_FROM` | sender address (default `ne-pas-repondre@inclusion.gouv.fr`) |
 | `SMTP_ADDRESS`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD` | Scaleway TEM: `smtp.tem.scaleway.com`, `587`, project ID, secret key |
+| `RDVSP_URL`, `RDVSP_OAUTH_CLIENT_ID`, `RDVSP_OAUTH_CLIENT_SECRET` (optional) | RDV-SP and the OAuth application its developers registered for the bridge (redirect `<BRIDGE_BASE_URL>/rdvsp/callback`); the usager import stays hidden without all three |
 | `SENTRY_DSN` (optional) | `send_default_pii` is off: request bodies can contain usager data |
 | `RAILS_LOG_LEVEL` (optional) | default `info` |
 

@@ -7,6 +7,21 @@ module PipedriveHelpers
       .merge(attrs.transform_keys(&:to_s))
   end
 
+  # A v1 person, a beneficiary active in 2025 by default (field "abc123", option "34")
+  def pipedrive_person(id, **attrs)
+    { "id" => id, "first_name" => "Ada", "last_name" => "Lovelace", "add_time" => "2020-05-01 10:00:00",
+      "last_activity_date" => "2025-06-01", "next_activity_date" => nil, "abc123" => "12,34",
+      "email" => [{ "value" => "", "primary" => false }], "phone" => [], }.merge(attrs.transform_keys(&:to_s))
+  end
+
+  def stub_pipedrive_persons(*pages)
+    pages.each_with_index do |persons, index|
+      pagination = { more_items_in_collection: index < pages.size - 1, next_start: (index + 1) * 500 }
+      stub_request(:get, "#{API}/v1/persons").with(query: { start: (index * 500).to_s, limit: "500" })
+        .to_return_json(body: { success: true, data: persons, additional_data: { pagination: } })
+    end
+  end
+
   def stub_pipedrive_activities(activities, query: hash_including({}))
     stub_request(:get, "#{API}/api/v2/activities").with(query:)
       .to_return_json(body: { success: true, data: activities, additional_data: { next_cursor: nil } })

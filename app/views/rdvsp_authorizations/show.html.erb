@@ -1,0 +1,11 @@
+<h1>Autoriser Pont RDV</h1>
+<p>
+  <strong><%= @account.name %></strong> vous demande d’autoriser Pont RDV à créer des usagers dans
+  RDV Service Public en votre nom, à partir de ses bénéficiaires.
+</p>
+<p>
+  Vous allez vous connecter à RDV Service Public, qui vous demandera de confirmer. Pont RDV agira avec vos droits
+  d’agent, et RDV Service Public enregistrera chaque usager créé à votre nom.
+</p>
+<%= button_to "Continuer vers RDV Service Public", rdvsp_authorization_link_path(params[:token]) %>
+<p class="muted">Pour retirer cette autorisation plus tard, demandez-le à l’équipe qui vous a envoyé ce lien.</p>

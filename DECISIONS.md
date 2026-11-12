@@ -194,3 +194,16 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
       2026-11-10. One issue alert: new issues and regressions only, at most once a day per issue, e-mail to
       Louis-Jean (Slack DM to be added by hand: Sentry didn't find the handle). Still missing: SMTP + `ALERT_EMAIL`
       for the e-mails, and a read-only Cockpit token to search the logs beyond the CLI's last 100 lines.
+
+## Usagers in RDV-SP (2026-11-12)
+
+36. **(you → me)** Usagers can be transferred from the source to RDV-SP, so that agents don't type them in, and the
+    bridge's OAuth application at RDV-SP prepares the use of RDV plans. The bridge now holds an RDV-SP credential: an
+    OAuth token (RDV-SP's Doorkeeper, `authorization_code`, one `write` scope), per account, from whichever of the
+    partner's agents authorizes it through a signed link valid 7 days (the admin is staff-only). Applications are
+    registered by RDV-SP's developers: demo (redirect `http://localhost:3010/rdvsp/callback`) and production,
+    `grants_autonomous_signup` off. Staff choose the organisation, the Pipedrive field option that marks a beneficiary
+    and an activity date, see a preview (counts only), then a job creates the usagers with an `external_reference` to
+    the Pipedrive person. Persons whose e-mail, phone or full name an organisation's usager already has are left out:
+    agents had created some by hand, and a homonym left out is better than a duplicate. The bridge keeps person id ↔
+    usager id, no personal data. One-off, re-runnable; no continuous sync (`docs/rdvsp-usager-import.md`).

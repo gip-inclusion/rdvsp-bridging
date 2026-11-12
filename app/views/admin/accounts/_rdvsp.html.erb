@@ -1,0 +1,36 @@
+<h2>RDV Service Public</h2>
+<% authorization = account.rdvsp_authorization %>
+<% if authorization %>
+  <p>
+    Autorisée par l’agent <%= authorization.agent_email || "n° #{authorization.agent_id}" %>
+    le <%= paris_time(authorization.created_at) %>.
+    <% if authorization.lost? %>
+      <span class="ko">Perdue le <%= paris_time(authorization.lost_at) %> : envoyez un nouveau lien.</span>
+    <% end %>
+  </p>
+  <%= button_to "Retirer l’autorisation", admin_account_rdvsp_authorization_path(account), method: :delete,
+                form: { class: "inline", onsubmit: "return confirm('Retirer l’autorisation RDV-SP ?')" } %>
+  <% unless authorization.lost? %>
+    <%= link_to "Importer des bénéficiaires", new_admin_account_usager_import_path(account) %>
+  <% end %>
+<% else %>
+  <p>Aucun agent n’a encore autorisé la passerelle à utiliser l’API de RDV-SP.</p>
+<% end %>
+<p>
+  Lien d’autorisation à envoyer à un agent RDV-SP du partenaire (valable 7 jours) :<br>
+  <code><%= Rails.configuration.x.base_url %><%= rdvsp_authorization_link_path(RdvspAuthorization.link_token(account)) %></code>
+</p>
+
+<% if account.usager_imports.any? %>
+  <table>
+    <tr><th>Lancé le</th><th>Organisation</th><th>État</th><th>Bilan</th></tr>
+    <% account.usager_imports.order(created_at: :desc).each do |usager_import| %>
+      <tr>
+        <td><%= paris_time(usager_import.created_at) %></td>
+        <td><%= usager_import.rdvsp_organisation_id %></td>
+        <td><%= usager_import_state(usager_import) %></td>
+        <td><%= usager_import_summary(usager_import) %></td>
+      </tr>
+    <% end %>
+  </table>
+<% end %>
