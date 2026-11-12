@@ -14,3 +14,12 @@
 # ActiveSupport::Inflector.inflections(:en) do |inflect|
 #   inflect.acronym "RESTful"
 # end
+
+# French plurals for the views' pluralize (the app speaks French; English inflections stay the default elsewhere).
+# Regular rules only: add exceptions (bleu → bleus, bal → bals…) with inflect.irregular when a view needs one.
+ActiveSupport::Inflector.inflections(:fr) do |inflect|
+  inflect.plural(/$/, "s")
+  inflect.plural(/([sxz])$/i, '\1')
+  inflect.plural(/(eau|au|eu)$/i, '\1x')
+  inflect.plural(/al$/i, "aux")
+end
