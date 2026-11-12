@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_10_182138) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_12_100200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -202,6 +202,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_182138) do
     t.index ["scheduled_at"], name: "index_good_jobs_on_scheduled_at", where: "(finished_at IS NULL)"
   end
 
+  create_table "imported_usagers", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "usager_import_id"
+    t.string "provider_person_id", null: false
+    t.bigint "rdvsp_user_id", null: false
+    t.bigint "rdvsp_organisation_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "provider_person_id"], name: "index_imported_usagers_on_account_id_and_provider_person_id", unique: true
+    t.index ["usager_import_id"], name: "index_imported_usagers_on_usager_import_id"
+  end
+
   create_table "rdvs", force: :cascade do |t|
     t.bigint "connection_id", null: false
     t.string "href_name", null: false
@@ -224,8 +236,42 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_182138) do
     t.index ["provider_object_id"], name: "index_rdvs_on_provider_object_id"
   end
 
+  create_table "rdvsp_authorizations", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "agent_id", null: false
+    t.string "agent_email"
+    t.text "access_token", null: false
+    t.text "refresh_token", null: false
+    t.datetime "expires_at", null: false
+    t.datetime "lost_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_rdvsp_authorizations_on_account_id", unique: true
+  end
+
+  create_table "usager_imports", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "rdvsp_organisation_id", null: false
+    t.string "field_key", null: false
+    t.string "option_id", null: false
+    t.date "active_since", null: false
+    t.string "state", default: "queued", null: false
+    t.jsonb "counts", default: {}, null: false
+    t.jsonb "rejections", default: {}, null: false
+    t.text "error"
+    t.datetime "started_at"
+    t.datetime "finished_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_usager_imports_on_account_id"
+  end
+
   add_foreign_key "busy_block_changes", "connections", on_delete: :cascade
   add_foreign_key "busy_blocks", "connections"
   add_foreign_key "connections", "accounts"
+  add_foreign_key "imported_usagers", "accounts"
+  add_foreign_key "imported_usagers", "usager_imports", on_delete: :nullify
   add_foreign_key "rdvs", "connections"
+  add_foreign_key "rdvsp_authorizations", "accounts"
+  add_foreign_key "usager_imports", "accounts"
 end
