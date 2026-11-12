@@ -7,4 +7,9 @@ class UsagerImport < ApplicationRecord
 
   validates :state, inclusion: { in: STATES }
   validates :rdvsp_organisation_id, :field_key, :option_id, :active_since, presence: true
+
+  # Error messages from the API clients carry statuses and attribute names, never usager data
+  def fail!(error)
+    update!(state: "failed", error: "#{error.class}: #{error.message}".truncate(500), finished_at: Time.current)
+  end
 end

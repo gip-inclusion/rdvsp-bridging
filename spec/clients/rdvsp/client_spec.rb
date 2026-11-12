@@ -51,7 +51,7 @@ RSpec.describe Rdvsp::Client, :rdvsp do
     )
 
     expect { client.create_user({}) }.to raise_error(Rdvsp::UnprocessableError) { |error|
-      expect(error.errors).to eq("email" => ["invalid"], "external_references.external_id" => ["taken"])
+      expect(error.codes).to eq("email" => ["invalid"], "external_references.external_id" => ["taken"])
       expect(error.message).not_to include("ada@")
     }
   end
