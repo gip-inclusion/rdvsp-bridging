@@ -38,6 +38,21 @@ module Pipedrive
 
     def create_person(attributes) = post("/api/v2/persons", attributes)
 
+    def person_fields = get("/v1/personFields", limit: PAGE_SIZE)
+
+    # v1, unlike v2, has last_activity_date and the custom fields' raw values ("12,34" for a set)
+    def each_person(&)
+      start = 0
+      loop do
+        body = request(:get, "/v1/persons", params: { start:, limit: PAGE_SIZE })
+        Array(body["data"]).each(&)
+        pagination = body.dig("additional_data", "pagination") || {}
+        break unless pagination["more_items_in_collection"]
+
+        start = pagination["next_start"]
+      end
+    end
+
     def webhooks = get("/v1/webhooks")
 
     def create_webhook(attributes) = post("/v1/webhooks", attributes)
