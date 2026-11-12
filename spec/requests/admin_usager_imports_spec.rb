@@ -37,12 +37,13 @@ RSpec.describe "Admin: RDV-SP usager import", :rdvsp do
     stub_rdvsp_organisations([{ id: 42, name: "Association Exemple Paris" }])
     stub_rdvsp_organisation_users(42, [])
     stub_pipedrive_fields
-    stub_pipedrive_persons([pipedrive_person(1), pipedrive_person(2, first_name: nil)])
+    stub_pipedrive_persons([pipedrive_person(1), pipedrive_person(2, first_name: nil),
+                            pipedrive_person(3, first_name: "Grace", last_name: "Hopper"),])
 
     get "/admin/accounts/#{account.id}/usager_imports/new", params: preview_params, headers: headers
 
     expect(response).to have_http_status(:ok)
-    expect(response.body).to include("Association Exemple Paris", "Type → Accompagnée", "Importer 1 usager")
+    expect(response.body).to include("Association Exemple Paris", "Type → Accompagnée", "Importer 2 usagers")
     expect(response.body).not_to include("Lovelace")
   end
 
