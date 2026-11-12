@@ -22,6 +22,8 @@ Rails.application.routes.draw do
     get "google/callback" => "google#callback", as: :google_callback
     resources :accounts, only: %i[index show new create update] do
       resources :connections, only: %i[new create]
+      resource :rdvsp_authorization, only: :destroy
+      resources :usager_imports, only: %i[new create]
     end
     resources :connections, only: %i[show update] do
       post :reset_password, on: :member

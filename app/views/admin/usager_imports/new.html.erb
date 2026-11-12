@@ -1,0 +1,36 @@
+<h1>Importer des bénéficiaires dans RDV-SP</h1>
+<p class="muted">
+  <%= link_to @account.name, admin_account_path(@account) %> · au nom de l’agent RDV-SP
+  <%= @authorization.agent_email || "n° #{@authorization.agent_id}" %>
+</p>
+<p>
+  Les personnes Pipedrive qui portent l’option choisie et ont été actives depuis la date (activité passée ou prévue, ou
+  création) deviennent des usagers de l’organisation, avec leurs nom, prénom, e-mail et téléphone. Celles qui y sont
+  déjà (même e-mail, même téléphone ou même nom) ne sont pas recréées.
+</p>
+<%= form_with url: new_admin_account_usager_import_path(@account), method: :get do |f| %>
+  <label>Organisation RDV-SP
+    <%= f.select :organisation_id, @organisations.map { [it["name"], it["id"]] }, selected: params[:organisation_id] %>
+  </label>
+  <label>Bénéficiaires : <%= f.select :field, @options, selected: params[:field] %></label>
+  <label>Actifs depuis le <%= f.date_field :active_since, value: @active_since %></label>
+  <%= f.submit "Prévisualiser", name: nil %>
+<% end %>
+
+<% if @plan %>
+  <h2>Aperçu</h2>
+  <table>
+    <tr><th>Bénéficiaires sélectionnés</th><td><%= @plan.counts["selected"] %></td></tr>
+    <tr><th>Déjà importés par la passerelle</th><td><%= @plan.counts["already_imported"] %></td></tr>
+    <tr><th>Écartés : prénom ou nom manquant</th><td><%= @plan.counts["incomplete_name"] %></td></tr>
+    <tr>
+      <th>Déjà dans l’organisation, ou en double dans Pipedrive</th><td><%= @plan.counts["already_in_rdvsp"] %></td>
+    </tr>
+    <tr><th>À créer</th><td><strong><%= @plan.counts["to_create"] %></strong></td></tr>
+  </table>
+  <% if @plan.counts["to_create"].positive? %>
+    <%= button_to "Importer #{pluralize(@plan.counts['to_create'], 'usager')}",
+                  admin_account_usager_imports_path(@account),
+                  params: params.permit(:organisation_id, :field, :active_since).to_h %>
+  <% end %>
+<% end %>
