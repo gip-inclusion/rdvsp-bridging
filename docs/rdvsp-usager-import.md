@@ -1,6 +1,6 @@
 # Importing a partner's beneficiaries as RDV-SP usagers (design)
 
-Status: proposed on 2026-11-12, branch `rdvsp-usager-import`.
+Status: agreed and built on 2026-11-12, branch `rdvsp-usager-import` (decision 36).
 
 ## Why
 
@@ -57,8 +57,8 @@ On the account's admin page, once authorized:
 3. **Import**: an `UsagerImport` row (settings, state, counts) and `ImportUsagersJob`, one at a time per account. The
    job recomputes the plan, then creates each usager with first name, last name, primary e-mail, primary phone, and
    `external_reference: { external_id: <Pipedrive person id>, external_url: <person page in Pipedrive> }`. RDV-SP keeps
-   that reference unique per application and territory, which guards against duplicates on its side too. Each usager
-   created is added to the in-memory index, so two Pipedrive persons with the same e-mail don't both get created.
+   that reference unique per application and territory, which guards against duplicates on its side too. The plan
+   adds each person to create to its index, so two Pipedrive persons with the same e-mail don't both get created.
 4. **Results.** `ImportedUsager` keeps the Pipedrive person id ↔ RDV-SP usager id (and organisation): no personal data.
    When RDV-SP rejects only the e-mail and/or the phone (422), the usager is created again without them. Other
    rejections are counted by attribute name, never by value. An `external_id` already taken counts as already imported.
