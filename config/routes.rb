@@ -10,6 +10,12 @@ Rails.application.routes.draw do
 
   post "webhooks/pipedrive" => "pipedrive_webhooks#create", as: :pipedrive_webhook
 
+  scope "rdvsp", controller: :rdvsp_authorizations do
+    get "authorize/:token", action: :show, as: :rdvsp_authorization_link, constraints: { token: %r{[^/]+} }
+    post "authorize/:token", action: :create, constraints: { token: %r{[^/]+} }
+    get "callback", action: :callback, as: :rdvsp_callback
+  end
+
   namespace :admin do
     root "accounts#index"
     get "google/connect" => "google#connect", as: :google_connect
