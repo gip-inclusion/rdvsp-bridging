@@ -216,3 +216,9 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
 38. **(you → me)** The organisation where "Prendre RDV" creates the persons not transferred yet belongs to the account,
     no longer to its last import: chosen in the admin, replaced by each import, and without one the authorizing
     agent's only organisation. A partner can use the button before any import.
+39. **(you → me)** `link_persons` first attaches an RDV's activity to the person of its only participant the bridge
+    transferred: the bridge reads the RDV's participants from RDV-SP's API (`GET /api/v1/rdvs?id=…`, as the agent who
+    authorized it) and maps them through `ImportedUsager`. It needs no usager details, and reveals nothing the partner
+    doesn't know: the usager came from their Pipedrive. Matching by name (decision 4) remains the fallback, with
+    `usager_details` only. No RDV-SP authorization, an RDV the agent can't see, a collective RDV or RDV-SP failing:
+    the fallback applies.
