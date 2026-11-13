@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe UsagerImports::Run, :rdvsp do
-  let(:account) { create(:account, provider_company_domain: "acme") }
+  let(:account) { create(:account, provider_company_id: "13579", provider_company_domain: "acme") }
   let(:usager_import) do
     create(:usager_import, account:, rdvsp_organisation_id: 42, field_key: "abc123", option_id: "34")
   end
@@ -16,13 +16,13 @@ RSpec.describe UsagerImports::Run, :rdvsp do
     { status: 422, body: { errors:, error_messages: [] }.to_json, headers: { "Content-Type" => "application/json" } }
   end
 
-  it "creates each usager with a reference to its Pipedrive person, and records it" do
+  it "creates each usager with a reference to its Pipedrive person, unique across companies, and records it" do
     stub_pipedrive_persons([pipedrive_person(7, email: [{ value: "ada@example.fr", primary: true }],
                                                 phone: [{ value: "06 12 34 56 78", primary: true }])])
     create_user = stub_request(:post, users_url).with(body: {
       first_name: "Ada", last_name: "Lovelace", email: "ada@example.fr", phone_number: "06 12 34 56 78",
       organisation_ids: [42],
-      external_reference: { external_id: "7", external_url: "https://acme.pipedrive.com/person/7" },
+      external_reference: { external_id: "pipedrive-13579-7", external_url: "https://acme.pipedrive.com/person/7" },
     }.to_json).to_return_json(body: { user: { id: 99 } })
 
     described_class.call(usager_import:)
@@ -50,7 +50,7 @@ RSpec.describe UsagerImports::Run, :rdvsp do
   it "counts a usager RDV-SP already has from this application as imported, and other rejections by attribute" do
     stub_pipedrive_persons([pipedrive_person(7), pipedrive_person(8, first_name: "Grace")])
     stub_request(:post, users_url).with(body: hash_including("first_name" => "Ada"))
-      .to_return(rejection("external_references.external_id": [{ error: "taken", value: "7" }]))
+      .to_return(rejection("external_references.external_id": [{ error: "taken", value: "pipedrive-13579-7" }]))
     stub_request(:post, users_url).with(body: hash_including("first_name" => "Grace"))
       .to_return(rejection(birth_date: [{ error: "invalid" }], last_name: [{ error: "blank" }]))
 
