@@ -17,6 +17,12 @@ module Rdvsp
 
     def create_rdv_plan(attributes) = request(:post, "/api/v1/rdv_plans", body: attributes).fetch("rdv_plan")
 
+    # nil when the agent can't see the RDV
+    def rdv_user_ids(rdv_id)
+      rdvs = request(:get, "/api/v1/rdvs", params: { id: Integer(rdv_id), include: ["participations"] }).fetch("rdvs")
+      rdvs.first&.fetch("participations")&.map { it.dig("user", "id") }
+    end
+
     private
 
     def each_page(path, root, &)
