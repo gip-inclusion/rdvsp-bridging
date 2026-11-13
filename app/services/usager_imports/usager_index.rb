@@ -3,22 +3,27 @@ module UsagerImports
   # ignored): a homonym is better left out than created twice
   class UsagerIndex
     def initialize
-      @keys = Set.new
+      @usager_ids = {}
     end
 
-    def add(first_name:, last_name:, email:, phone:)
-      @keys.merge(keys_for(first_name:, last_name:, email:, phone:))
+    def add(first_name:, last_name:, email:, phone:, id: nil)
+      keys_for(first_name:, last_name:, email:, phone:).each { @usager_ids[it] = id unless @usager_ids.key?(it) }
       self
     end
 
     def add_usager(usager)
       add(first_name: usager["first_name"], last_name: usager["last_name"], email: usager["email"],
-          phone: usager["phone_number_formatted"].presence || usager["phone_number"])
+          phone: usager["phone_number_formatted"].presence || usager["phone_number"], id: usager["id"])
     end
 
     def add_person(person) = add(**contact(person))
 
-    def include?(person) = keys_for(**contact(person)).any? { @keys.include?(it) }
+    def include?(person) = keys_for(**contact(person)).any? { @usager_ids.key?(it) }
+
+    # The usager with the person's e-mail or phone: one with the same name only may be someone else
+    def usager_id(person)
+      keys_for(**contact(person)).reject { it.start_with?("name:") }.filter_map { @usager_ids[it] }.first
+    end
 
     private
 

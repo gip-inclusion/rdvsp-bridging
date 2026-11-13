@@ -15,6 +15,8 @@ module Rdvsp
 
     def create_user(attributes) = request(:post, "/api/v1/users", body: attributes).fetch("user")
 
+    def create_rdv_plan(attributes) = request(:post, "/api/v1/rdv_plans", body: attributes).fetch("rdv_plan")
+
     private
 
     def each_page(path, root, &)

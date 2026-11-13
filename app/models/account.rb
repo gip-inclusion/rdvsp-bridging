@@ -16,6 +16,12 @@ class Account < ApplicationRecord
 
   has_secure_token :webhook_token
 
+  def provider_person_url(person_id)
+    return unless provider == "pipedrive" && provider_company_domain
+
+    "https://#{provider_company_domain}.pipedrive.com/person/#{person_id}"
+  end
+
   def failing? = failing_since.present?
 
   def failing_for_too_long? = failing? && failing_since.before?(FAILURE_GRACE_PERIOD.ago)

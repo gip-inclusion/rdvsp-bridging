@@ -40,6 +40,8 @@ module Pipedrive
 
     def person_fields = get("/v1/personFields", limit: PAGE_SIZE)
 
+    def person(id) = get("/v1/persons/#{Integer(id)}")
+
     # v1, unlike v2, has last_activity_date and the custom fields' raw values ("12,34" for a set)
     def each_person(&)
       start = 0

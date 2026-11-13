@@ -5,7 +5,20 @@ module Pipedrive
   class Beneficiaries
     include Enumerable
 
-    Person = Data.define(:id, :first_name, :last_name, :email, :phone)
+    Person = Data.define(:id, :first_name, :last_name, :email, :phone) do
+      # From a v1 person: the primary e-mail and phone, or else the first ones
+      def self.from_pipedrive(person)
+        new(id: person["id"].to_s, first_name: person["first_name"].to_s.squish.presence,
+            last_name: person["last_name"].to_s.squish.presence,
+            email: primary(person["email"]), phone: primary(person["phone"]))
+      end
+
+      def self.primary(values)
+        values = Array(values).select { it["value"].to_s.strip.present? }
+        (values.find { it["primary"] } || values.first)&.dig("value")&.strip
+      end
+      private_class_method :primary
+    end
 
     # [["Field → Option", "field_key:option_id"], …] for the fields that can mark a beneficiary
     def self.options(client)
@@ -23,7 +36,7 @@ module Pipedrive
 
     def each
       @client.each_person do |person|
-        yield to_person(person) if marked?(person) && active?(person)
+        yield Person.from_pipedrive(person) if marked?(person) && active?(person)
       end
     end
 
@@ -34,17 +47,6 @@ module Pipedrive
     def active?(person)
       person["next_activity_date"].present? ||
         [person["last_activity_date"], person["add_time"]].compact.any? { it.to_s.first(10) >= @active_since }
-    end
-
-    def to_person(person)
-      Person.new(id: person["id"].to_s, first_name: person["first_name"].to_s.squish.presence,
-                 last_name: person["last_name"].to_s.squish.presence,
-                 email: primary(person["email"]), phone: primary(person["phone"]))
-    end
-
-    def primary(values)
-      values = Array(values).select { it["value"].to_s.strip.present? }
-      (values.find { it["primary"] } || values.first)&.dig("value")&.strip
     end
   end
 end

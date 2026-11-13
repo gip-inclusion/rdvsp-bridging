@@ -65,6 +65,7 @@ docker push rg.fr-par.scw.cloud/<namespace>/rdvsp-bridging:<tag>
 | `MAIL_FROM` | sender address (default `ne-pas-repondre@inclusion.gouv.fr`) |
 | `SMTP_ADDRESS`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD` | Scaleway TEM: `smtp.tem.scaleway.com`, `587`, project ID, secret key |
 | `RDVSP_URL`, `RDVSP_OAUTH_CLIENT_ID`, `RDVSP_OAUTH_CLIENT_SECRET` (optional) | RDV-SP and the OAuth application its developers registered for the bridge (redirect `<BRIDGE_BASE_URL>/rdvsp/callback`); the usager import stays hidden without all three |
+| `PIPEDRIVE_APP_CLIENT_ID`, `PIPEDRIVE_APP_CLIENT_SECRET` (optional) | the bridge's private app in Pipedrive's Developer Hub (callback `<BRIDGE_BASE_URL>/pipedrive/app/callback`, link action `<BRIDGE_BASE_URL>/pipedrive/prendre-rdv` with its JWT secret left empty); the "Prendre RDV" button also needs the `RDVSP_*` variables (`docs/pipedrive-rdv-plan-button.md`) |
 | `SENTRY_DSN` (optional) | `send_default_pii` is off: request bodies can contain usager data |
 | `RAILS_LOG_LEVEL` (optional) | default `info` |
 

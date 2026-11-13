@@ -42,6 +42,15 @@ RSpec.describe Rdvsp::Client, :rdvsp do
     expect(create_user).to have_been_requested
   end
 
+  it "creates an RDV plan" do
+    attributes = { user: { id: 99 }, return_url: "https://bridge.example/back", dossier_url: "https://acme.example/7" }
+    create_plan = stub_request(:post, "#{rdvsp_url}/api/v1/rdv_plans").with(body: attributes.to_json)
+      .to_return_json(status: 201, body: { rdv_plan: { id: 5, user_id: 99, url: "#{rdvsp_url}/agents/rdv_plans/5" } })
+
+    expect(client.create_rdv_plan(attributes)).to include("url" => "#{rdvsp_url}/agents/rdv_plans/5")
+    expect(create_plan).to have_been_requested
+  end
+
   it "reports a refused usager by attribute and error code, never by value" do
     stub_request(:post, "#{rdvsp_url}/api/v1/users").to_return_json(
       status: 422,
