@@ -1,0 +1,13 @@
+<h1>Organisation des usagers dans RDV-SP</h1>
+<p class="muted"><%= link_to @account.name, admin_account_path(@account) %></p>
+<p>
+  Le bouton « Prendre RDV » crée dans cette organisation les personnes qui ne sont pas encore dans RDV-SP. Chaque
+  import la remplace par la sienne.
+</p>
+<%= form_with url: admin_account_rdvsp_organisation_path(@account), method: :patch do |f| %>
+  <label>Organisation RDV-SP
+    <%= f.select :organisation_id, @organisations.map { [it["name"], it["id"]] },
+                 selected: @account.rdvsp_organisation_id %>
+  </label>
+  <%= f.submit "Enregistrer", name: nil %>
+<% end %>
