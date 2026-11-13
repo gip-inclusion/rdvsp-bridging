@@ -55,7 +55,9 @@ Exact requests, verified by reading the gem and RDV-SP code (`production` branch
 - `app/providers/pipedrive/`: API client, activity → busy block mapping, RDV → activity writer, webhooks.
 - `app/providers/google/`: spike, Calendar REST API + OAuth (`docs/google.md`).
 - `app/clients/rdvsp/`: RDV-SP's own API, with an OAuth token an agent of the partner granted (`RdvspAuthorization`),
-  used to import the partner's beneficiaries as usagers (`UsagerImports::`, `docs/rdvsp-usager-import.md`).
+  used to import the partner's beneficiaries as usagers (`UsagerImports::`, `docs/rdvsp-usager-import.md`) and to open
+  RDV plans from the "Prendre RDV" button of the bridge's Pipedrive app (`RdvPlans::Start`, `PipedriveAppController`,
+  `docs/pipedrive-rdv-plan-button.md`).
 - `Providers` dispatches by convention to `<Provider>::RefreshAccount`, `RebuildConnection`, `PushRdv`;
   `RdvContent` holds the provider-agnostic rules about what an RDV may reveal.
 

@@ -1,6 +1,6 @@
 # "Prendre RDV" from a person in Pipedrive (design)
 
-Status: agreed on 2026-11-13 (decision 37).
+Status: agreed and built on 2026-11-13, branch `pipedrive-rdv-plan-button` (decision 37).
 
 ## Why
 
