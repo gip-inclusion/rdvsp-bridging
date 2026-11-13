@@ -207,3 +207,9 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
     the Pipedrive person. Persons whose e-mail, phone or full name an organisation's usager already has are left out:
     agents had created some by hand, and a homonym left out is better than a duplicate. The bridge keeps person id ↔
     usager id, no personal data. One-off, re-runnable; no continuous sync (`docs/rdvsp-usager-import.md`).
+37. **(you → me)** A "Prendre RDV" link action on the person's page in Pipedrive (a private app in the Developer Hub,
+    JWT-signed clicks) opens an RDV-SP RDV plan for that person: the bridge finds their usager, transferring them on
+    the fly with the import's rules if needed, creates the plan with the usager's id (never `external_id`, whose lookup
+    RDV-SP had broken) and redirects to it. A same-name usager without the same e-mail or phone is not used: the agent
+    books in RDV-SP. Plans belong to the agent who authorized the bridge, so only they can use the button for now
+    (`docs/pipedrive-rdv-plan-button.md`).
