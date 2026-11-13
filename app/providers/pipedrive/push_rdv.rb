@@ -42,6 +42,8 @@ module Pipedrive
       attributes = RdvActivity.new(@rdv, person_id:).attributes
       activity = update_existing(attributes) || client.create_activity(attributes)
       @rdv.update!(provider_object_id: activity["id"].to_s)
+      # Pipedrive may have announced the new activity before its id was saved: it isn't busy time
+      @rdv.connection.remove_busy_block!(activity["id"])
     end
 
     # The partner may have deleted the activity in Pipedrive: RDV-SP stays the source of truth, so we recreate it
