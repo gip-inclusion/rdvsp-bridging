@@ -30,6 +30,8 @@ gem "icalendar", "~> 2.11"
 gem "bcrypt", "~> 3.1"
 # OpenStruct results in BaseService (no longer a default gem)
 gem "ostruct"
+# Verifies the clicks Pipedrive signs for the app's link actions
+gem "jwt", "~> 3.3"
 gem "sentry-rails"
 gem "sentry-ruby"
 

@@ -1,5 +1,12 @@
 module PipedriveHelpers
   API = "https://api.pipedrive.com".freeze
+  APP_CLIENT_ID = "app-client-id".freeze
+  APP_CLIENT_SECRET = "app-client-secret".freeze
+
+  # The token Pipedrive adds to a link action's URL
+  def pipedrive_click_token(user_id: 501, company_id: 13_579, secret: APP_CLIENT_SECRET, **claims)
+    JWT.encode({ userId: user_id, companyId: company_id, iat: Time.current.to_i, **claims }, secret, "HS256")
+  end
 
   def pipedrive_activity(id:, owner_id:, due_date: Date.tomorrow.iso8601, due_time: "08:00", duration: "01:00", **attrs)
     { "id" => id, "owner_id" => Integer(owner_id), "type" => "meeting", "busy" => true, "done" => false,
@@ -28,4 +35,14 @@ module PipedriveHelpers
   end
 end
 
-RSpec.configure { it.include PipedriveHelpers }
+RSpec.configure do |config|
+  config.include PipedriveHelpers
+  config.around(:each, :pipedrive_app) do |example|
+    names = %w[PIPEDRIVE_APP_CLIENT_ID PIPEDRIVE_APP_CLIENT_SECRET]
+    previous = ENV.values_at(*names)
+    names.zip([PipedriveHelpers::APP_CLIENT_ID, PipedriveHelpers::APP_CLIENT_SECRET]).each { |name, value| ENV[name] = value }
+    example.run
+  ensure
+    names.zip(previous).each { |name, value| ENV[name] = value }
+  end
+end
