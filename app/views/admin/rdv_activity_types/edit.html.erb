@@ -1,0 +1,14 @@
+<h1>Type d’activité des RDV dans Pipedrive</h1>
+<p class="muted"><%= link_to @account.name, admin_account_path(@account) %></p>
+<p>
+  Les RDV pris dans RDV-SP arrivent dans Pipedrive comme des activités de ce type. Les activités déjà créées le
+  prennent à leur prochaine mise à jour. Le pont reconnaît les siennes à leur numéro : le type peut être un de ceux que
+  l’équipe utilise déjà, comme ses rendez-vous individuels.
+</p>
+<%= form_with url: admin_account_rdv_activity_type_path(@account), method: :patch do |f| %>
+  <label>Type existant
+    <%= f.select :key, @types.map { [it["name"], it["key_string"]] }, selected: @account.rdv_activity_type_key %>
+  </label>
+  <label>ou nouveau type, créé dans Pipedrive <%= f.text_field :name, size: 30 %></label>
+  <%= f.submit "Enregistrer", name: nil %>
+<% end %>
