@@ -33,8 +33,8 @@ RSpec.describe Pipedrive::BusyMapping do
     end
   end
 
-  it "ignores the activities the bridge created for RDVs" do
-    expect(described_class.new(connection).times_for(activity.merge("type" => "rdv_service_public"))).to be_nil
+  it "ignores the activities the bridge created for RDVs, not the others of their type: the partner may share it" do
+    expect(described_class.new(connection).times_for(activity.merge("type" => "rdv_service_public"))).to be_present
 
     create(:rdv, connection:, provider_object_id: "1")
     expect(described_class.new(connection).times_for(activity)).to be_nil
