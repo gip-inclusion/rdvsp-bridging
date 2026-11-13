@@ -8,6 +8,17 @@
       <span class="ko">Perdue le <%= paris_time(authorization.lost_at) %> : envoyez un nouveau lien.</span>
     <% end %>
   </p>
+  <p>
+    Organisation où « Prendre RDV » crée les usagers :
+    <% if account.rdvsp_organisation_id %>
+      n° <%= account.rdvsp_organisation_id %>.
+    <% else %>
+      pas encore choisie. À défaut, celle de l’agent s’il n’en a qu’une.
+    <% end %>
+    <% unless authorization.lost? %>
+      <%= link_to "Choisir l’organisation", edit_admin_account_rdvsp_organisation_path(account) %>
+    <% end %>
+  </p>
   <%= button_to "Retirer l’autorisation", admin_account_rdvsp_authorization_path(account), method: :delete,
                 form: { class: "inline", onsubmit: "return confirm('Retirer l’autorisation RDV-SP ?')" } %>
   <% unless authorization.lost? %>

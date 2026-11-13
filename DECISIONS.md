@@ -213,3 +213,6 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
     RDV-SP had broken) and redirects to it. A same-name usager without the same e-mail or phone is not used: the agent
     books in RDV-SP. Plans belong to the agent who authorized the bridge, so only they can use the button for now
     (`docs/pipedrive-rdv-plan-button.md`).
+38. **(you → me)** The organisation where "Prendre RDV" creates the persons not transferred yet belongs to the account,
+    no longer to its last import: chosen in the admin, replaced by each import, and without one the authorizing
+    agent's only organisation. A partner can use the button before any import.

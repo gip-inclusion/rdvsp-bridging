@@ -9,7 +9,7 @@ class PipedriveAppController < ApplicationController
     no_authorization: ["Pont RDV n’a pas accès à RDV Service Public",
                        "Demandez à l’équipe de Pont RDV un lien pour l’autoriser.", :forbidden,],
     no_organisation: ["Pont RDV ne sait pas dans quelle organisation créer cette personne",
-                      "Demandez à l’équipe de Pont RDV de transférer une première fois vos bénéficiaires.",
+                      "Demandez à l’équipe de Pont RDV de la choisir.",
                       :unprocessable_content,],
     unknown_person: ["Pipedrive ne trouve pas cette personne", "Rechargez sa fiche dans Pipedrive.", :not_found],
     incomplete_name: ["Il manque le prénom ou le nom de cette personne",

@@ -30,6 +30,8 @@ RSpec.describe "Pipedrive app: the Prendre RDV button and the installation", :pi
     end
 
     it "explains why it can't, in words the agent can act on" do
+      stub_rdvsp_organisations([{ id: 41, name: "Antenne Lyon" }, { id: 42, name: "Antenne Paris" }])
+
       click
 
       expect(response).to have_http_status(:unprocessable_content)

@@ -28,10 +28,12 @@ and `token`, a JWT (HS256) carrying `userId` and `companyId`. The bridge trusts 
 1. Verify the token; find the account by `companyId`; take the single id of `selectedIds`.
 2. The person's RDV-SP usager:
    - already transferred (`ImportedUsager`): its id;
-   - otherwise, transferred now, with the import's rules, into the organisation of the account's last finished
-     import: read the person from Pipedrive (v1), load the organisation's usagers; one with the same e-mail or phone is
-     used and recorded; a same-name usager without either is not (it may be someone else, whom RDV-SP would notify):
-     the page says to book in RDV-SP directly; no match → `POST /api/v1/users` as the import does.
+   - otherwise, transferred now, with the import's rules, into the account's organisation
+     (`accounts.rdvsp_organisation_id`: chosen in the admin, replaced by each import; without one, the authorizing
+     agent's only organisation, then kept): read the person from Pipedrive (v1), load the organisation's usagers; one
+     with the same e-mail or phone is used and recorded; a same-name usager without either is not (it may be someone
+     else, whom RDV-SP would notify): the page says to book in RDV-SP directly; no match → `POST /api/v1/users` as the
+     import does.
 3. `POST /api/v1/rdv_plans` with `user: { id }` (never `external_id`: RDV-SP's lookup by it was broken until
    betagouv/rdv-service-public#6937), `dossier_url` = the person's page in Pipedrive (RDV-SP links it from the RDV),
    `return_url` = a bridge URL redirecting to that page (RDV-SP only accepts its host from the OAuth application's
@@ -48,7 +50,7 @@ and `token`, a JWT (HS256) carrying `userId` and `companyId`. The bridge trusts 
 ## Errors
 
 Each case renders a page saying what to do: missing or invalid token (401), unknown company, no or lost RDV-SP
-authorization, no import yet (no organisation), first or last name missing in Pipedrive, homonym, RDV-SP rejecting the
+authorization, no organisation (none chosen and the agent has several), first or last name missing in Pipedrive, homonym, RDV-SP rejecting the
 usager, RDV-SP or Pipedrive failing (502). Logs carry ids only.
 
 ## Tests
