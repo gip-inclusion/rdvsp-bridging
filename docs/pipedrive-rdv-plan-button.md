@@ -45,7 +45,8 @@ and `token`, a JWT (HS256) carrying `userId` and `companyId`. The bridge trusts 
 - An RDV plan belongs to the agent whose token created it, and RDV-SP lets only them open it: only the agent who
   authorized the bridge can use the button. Next step: each agent authorizes the bridge at their first click.
 - A person not transferred yet loads the whole organisation's usagers (100 per page) for that click.
-- The RDV the plan creates comes back through CalDAV like any other; nothing links it to the Pipedrive person yet.
+- The RDV the plan creates comes back through CalDAV like any other; with `link_persons`, its activity is attached to
+  the person (decision 39).
 
 ## Errors
 

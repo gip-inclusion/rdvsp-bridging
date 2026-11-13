@@ -63,13 +63,18 @@ module Pipedrive
       true
     end
 
+    # The person of the usager the bridge transferred, otherwise one with their name (which only the details carry)
     def person_id
       return @rdv.provider_person_id if @rdv.provider_person_id.present?
-      return unless account.link_persons && account.usager_details
+      return unless account.link_persons
 
-      person = FindOrCreatePerson.new(client, @rdv.payload).call
-      @rdv.update!(provider_person_id: person["id"].to_s) if person
+      person_id = UsagerImports::RdvPerson.new(account).person_id(@rdv.rdvsp_id) || person_id_by_name
+      @rdv.update!(provider_person_id: person_id) if person_id
       @rdv.provider_person_id
+    end
+
+    def person_id_by_name
+      FindOrCreatePerson.new(client, @rdv.payload).call&.fetch("id")&.to_s if account.usager_details
     end
   end
 end

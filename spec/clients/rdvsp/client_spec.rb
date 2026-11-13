@@ -23,6 +23,17 @@ RSpec.describe Rdvsp::Client, :rdvsp do
     expect { client.me }.to raise_error(Rdvsp::AuthenticationError)
   end
 
+  it "gives the usagers of an RDV the agent can see" do
+    participations = [{ id: 1, user: { id: 98 } }, { id: 2, user: { id: 99 } }]
+    stub_request(:get, "#{rdvsp_url}/api/v1/rdvs").with(query: { id: "555", include: ["participations"] })
+      .to_return_json(body: { rdvs: [{ id: 555, participations: }], meta: { next_page: nil } })
+    stub_request(:get, "#{rdvsp_url}/api/v1/rdvs").with(query: { id: "556", include: ["participations"] })
+      .to_return_json(body: { rdvs: [], meta: { next_page: nil } })
+
+    expect(client.rdv_user_ids(555)).to eq([98, 99])
+    expect(client.rdv_user_ids(556)).to be_nil
+  end
+
   it "follows the pages of an organisation's usagers" do
     path = "#{rdvsp_url}/api/v1/organisations/42/users"
     stub_request(:get, path).with(query: { page: "1" })

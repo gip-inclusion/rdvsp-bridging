@@ -124,4 +124,35 @@ RSpec.describe Pipedrive::PushRdv do
       expect(rdv.reload.provider_person_id).to eq("3")
     end
   end
+
+  context "when the RDV's usager was transferred by the bridge", :rdvsp do
+    before do
+      create(:rdvsp_authorization, account:)
+      create(:imported_usager, account:, provider_person_id: "3", rdvsp_user_id: 99)
+      rdv.update!(rdvsp_id: 555, payload: { "summary" => "RDV Accueil" })
+      stub_request(:get, "#{rdvsp_url}/api/v1/rdvs").with(query: hash_including("id" => "555"))
+        .to_return_json(body: { rdvs: [{ id: 555, participations: [{ user: { id: 99 } }] }] })
+    end
+
+    it "links their person, even without the usager's details" do
+      account.update!(link_persons: true)
+      create_request = stub_request(:post, "#{api}/api/v2/activities")
+        .with(body: hash_including("participants" => [{ "person_id" => 3, "primary" => true }]))
+        .to_return_json(body: { data: { id: 77 } })
+
+      described_class.call(rdv:)
+
+      expect(create_request).to have_been_requested
+      expect(rdv.reload.provider_person_id).to eq("3")
+    end
+
+    it "links no one when the account doesn't link persons" do
+      create_request = stub_request(:post, "#{api}/api/v2/activities")
+        .with { !JSON.parse(it.body).key?("participants") }.to_return_json(body: { data: { id: 77 } })
+
+      described_class.call(rdv:)
+
+      expect(create_request).to have_been_requested
+    end
+  end
 end
