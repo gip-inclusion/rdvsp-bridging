@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_12_100200) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -35,6 +35,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_100200) do
     t.datetime "updated_at", null: false
     t.text "access_token"
     t.datetime "access_token_expires_at"
+    t.bigint "rdvsp_organisation_id"
     t.index ["provider", "provider_company_id"], name: "index_accounts_on_provider_and_provider_company_id", unique: true
     t.index ["webhook_token"], name: "index_accounts_on_webhook_token", unique: true
   end

@@ -32,13 +32,9 @@ RSpec.describe RdvPlans::Start, :rdvsp do
   end
 
   context "when the person isn't transferred yet" do
-    before do
-      create(:usager_import, account:, rdvsp_organisation_id: 41, state: "done", finished_at: 2.days.ago)
-      create(:usager_import, account:, rdvsp_organisation_id: 42, state: "done", finished_at: 1.day.ago)
-      create(:usager_import, account:, rdvsp_organisation_id: 43, state: "failed", finished_at: 1.hour.ago)
-    end
+    before { account.update!(rdvsp_organisation_id: 42) }
 
-    it "uses the usager of the last import's organisation with the same e-mail, and records it" do
+    it "uses the usager of the account's organisation with the same e-mail, and records it" do
       stub_person(email: [{ value: "ada@example.fr", primary: true }])
       stub_rdvsp_organisation_users(42, [usager(98, "Ada", "King", email: "ADA@example.fr")])
       stub_rdv_plan(98)
@@ -89,8 +85,23 @@ RSpec.describe RdvPlans::Start, :rdvsp do
     end
   end
 
-  it "stops when no import chose an organisation yet" do
-    expect(result.reason).to eq(:no_organisation)
+  context "when no organisation was chosen for the account" do
+    it "takes the agent's only organisation, and keeps it" do
+      stub_rdvsp_organisations([{ id: 42, name: "Association Exemple Paris" }])
+      stub_person(email: [{ value: "ada@example.fr", primary: true }])
+      stub_rdvsp_organisation_users(42, [usager(98, "Ada", "Lovelace", email: "ada@example.fr")])
+      stub_rdv_plan(98)
+
+      expect(result.url).to eq(plan_url)
+      expect(account.reload.rdvsp_organisation_id).to eq(42)
+    end
+
+    it "stops when the agent has several" do
+      stub_rdvsp_organisations([{ id: 41, name: "Antenne Lyon" }, { id: 42, name: "Antenne Paris" }])
+
+      expect(result.reason).to eq(:no_organisation)
+      expect(account.reload.rdvsp_organisation_id).to be_nil
+    end
   end
 
   it "stops when no agent authorized the bridge, or the authorization is lost" do
