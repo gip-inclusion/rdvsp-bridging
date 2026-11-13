@@ -16,6 +16,12 @@ Rails.application.routes.draw do
     get "callback", action: :callback, as: :rdvsp_callback
   end
 
+  scope "pipedrive", controller: :pipedrive_app do
+    get "prendre-rdv", action: :rdv_plan, as: :pipedrive_rdv_plan
+    get "retour/:token", action: :back, as: :pipedrive_back, constraints: { token: %r{[^/]+} }
+    get "app/callback", action: :callback, as: :pipedrive_app_callback
+  end
+
   namespace :admin do
     root "accounts#index"
     get "google/connect" => "google#connect", as: :google_connect

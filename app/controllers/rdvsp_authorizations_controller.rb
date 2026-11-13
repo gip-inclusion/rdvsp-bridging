@@ -1,5 +1,7 @@
 # A partner's agent authorizes the bridge to call RDV-SP's API in their name, from a link staff sent them
 class RdvspAuthorizationsController < ApplicationController
+  include PublicMessages
+
   layout "public"
 
   before_action { not_found unless Rdvsp::Oauth.configured? }
@@ -42,8 +44,6 @@ class RdvspAuthorizationsController < ApplicationController
   end
 
   def expected_state?(state) = state.present? && ActiveSupport::SecurityUtils.secure_compare(state, params[:state].to_s)
-
-  def message(title, text, status = :ok) = render(:message, locals: { title:, text: }, status:)
 
   def not_found = head(:not_found)
 
