@@ -21,6 +21,7 @@ class Admin::UsagerImportsController < Admin::BaseController
     settings => { organisation_id:, field_key:, option_id:, active_since: }
     usager_import = @account.usager_imports.create!(rdvsp_organisation_id: organisation_id, field_key:, option_id:,
                                                     active_since:)
+    @account.update!(rdvsp_organisation_id: organisation_id)
     ImportUsagersJob.perform_later(usager_import)
     redirect_to admin_account_path(@account), notice: "Import lancé : son bilan s’affiche ci-dessous."
   end

@@ -55,6 +55,7 @@ RSpec.describe "Admin: RDV-SP usager import", :rdvsp do
 
     expect(account.usager_imports.sole).to have_attributes(rdvsp_organisation_id: 42, field_key: "abc123",
                                                            option_id: "34", active_since: Date.new(2025, 1, 1))
+    expect(account.reload.rdvsp_organisation_id).to eq(42)
     expect(response).to redirect_to("/admin/accounts/#{account.id}")
   end
 
