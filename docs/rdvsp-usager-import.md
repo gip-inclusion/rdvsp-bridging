@@ -57,8 +57,11 @@ On the account's admin page, once authorized:
    - to create.
 3. **Import**: an `UsagerImport` row (settings, state, counts) and `ImportUsagersJob`, one at a time per account. The
    job recomputes the plan, then creates each usager with first name, last name, primary e-mail, primary phone, and
-   `external_reference: { external_id: <Pipedrive person id>, external_url: <person page in Pipedrive> }`. RDV-SP keeps
-   that reference unique per application and territory, which guards against duplicates on its side too. The plan
+   `external_reference: { external_id: "pipedrive-<company id>-<person id>", external_url: <person page in Pipedrive> }`.
+   RDV-SP keeps that reference unique per application and territory, which guards against duplicates on its side too.
+   The company id is there because Pipedrive numbers persons per company and all partners share the bridge's
+   application: two partners in one territory would otherwise collide, and RDV-SP looks references up by application
+   only (`POST /api/v1/rdv_plans`). The plan
    adds each person to create to its index, so two Pipedrive persons with the same e-mail don't both get created.
 4. **Results.** `ImportedUsager` keeps the Pipedrive person id ↔ RDV-SP usager id (and organisation): no personal
    data.

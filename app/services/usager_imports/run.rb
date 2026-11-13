@@ -48,9 +48,12 @@ module UsagerImports
       {
         first_name: person.first_name, last_name: person.last_name, email: person.email, phone_number: person.phone,
         organisation_ids: [@import.rdvsp_organisation_id],
-        external_reference: { external_id: person.id, external_url: person_url(person) }.compact,
+        external_reference: { external_id: external_id(person), external_url: person_url(person) }.compact,
       }.compact
     end
+
+    # Persons are numbered per Pipedrive company, and all partners share the bridge's OAuth application at RDV-SP
+    def external_id(person) = "#{@account.provider}-#{@account.provider_company_id}-#{person.id}"
 
     def contact?(person) = person.email.present? || person.phone.present?
 
