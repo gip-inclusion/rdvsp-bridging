@@ -42,11 +42,12 @@ authorization as lost on the admin page; staff then send a new link.
 
 On the account's admin page, once authorized:
 
-1. **Settings.** The RDV-SP organisation (`GET /api/v1/organisations`, those of the authorizing agent); the Pipedrive
-   field and value that mark a beneficiary (a select of the options of every set or single-option person field, e.g.
-   a "contact type" field → its "beneficiary" option); "actif depuis" (default: January 1st of last year). A person is
-   active when their last activity, next activity or creation is on or after that date (`last_activity_date` is only
-   in Pipedrive's v1 API: `update_time` was bumped on every person of the first partner by a bulk edit).
+1. **Settings.** The RDV-SP organisation (`GET /api/v1/organisations`, those of the authorizing agent; it becomes the
+   account's, used by the "Prendre RDV" button); the Pipedrive field and value that mark a beneficiary (a select of the
+   options of every set or single-option person field, e.g. a "contact type" field → its "beneficiary" option); "actif
+   depuis" (default: January 1st of last year). A person is active when their last activity, next activity or creation
+   is on or after that date (`last_activity_date` is only in Pipedrive's v1 API: `update_time` was bumped on every
+   person of the first partner by a bulk edit).
 2. **Preview**, computed in the request, nothing written. Counts only, no names:
    - beneficiaries selected;
    - set aside for lack of a first or last name (RDV-SP requires both);
