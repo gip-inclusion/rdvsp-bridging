@@ -14,6 +14,15 @@ RSpec.describe Pipedrive::PushRdv do
     expect(rdv.reload).to have_attributes(provider_object_id: "77", state: "synced", payload: nil)
   end
 
+  it "removes the busy time recorded for its new activity before the bridge knew it" do
+    connection.upsert_busy_block!("77", starts_at: rdv.starts_at, ends_at: rdv.ends_at)
+    stub_request(:post, "#{api}/api/v2/activities").to_return_json(body: { data: { id: 77 } })
+
+    described_class.call(rdv:)
+
+    expect(connection.busy_blocks.live).to be_empty
+  end
+
   it "updates the existing activity" do
     rdv.update!(provider_object_id: "77")
     request = stub_request(:patch, "#{api}/api/v2/activities/77").to_return_json(body: { data: { id: 77 } })

@@ -3,7 +3,8 @@
 <% if @account.provider == "pipedrive" %>
   <p class="muted">
     Pipedrive <code><%= @account.provider_company_domain %></code> ·
-    type d’activité <code><%= @account.rdv_activity_type_key || "meeting" %></code> ·
+    type d’activité <code><%= @account.rdv_activity_type_key || "meeting" %></code>
+    (<%= link_to "changer", edit_admin_account_rdv_activity_type_path(@account) %>) ·
     webhook <%= @account.provider_webhook_id ? "actif" : "non configuré (passerelle non publique)" %>
   </p>
 <% else %>

@@ -28,7 +28,6 @@ module Pipedrive
         activity["busy"] != false &&
         activity["due_date"].present? &&
         (activity["due_time"].present? || @connection.include_all_day) &&
-        (rdv_type_key.nil? || activity["type"] != rdv_type_key) &&
         excluded_activity_ids.exclude?(activity["id"].to_s)
     end
 
@@ -51,8 +50,7 @@ module Pipedrive
 
     def in_window?(times) = times[:ends_at] > WINDOW_PAST.ago && times[:starts_at] < WINDOW_FUTURE.from_now
 
-    def rdv_type_key = @connection.account.rdv_activity_type_key.presence
-
+    # The bridge's own activities, by id only: the RDV activity type may be one the partner uses too
     def excluded_activity_ids
       @excluded_activity_ids ||= Rdv.joins(:connection).where(connections: { account_id: @connection.account_id })
         .where.not(provider_object_id: nil).pluck(:provider_object_id).to_set
