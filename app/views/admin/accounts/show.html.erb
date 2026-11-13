@@ -14,7 +14,10 @@
 <%= form_with model: @account, url: admin_account_path(@account) do |f| %>
   <label><%= f.check_box :usager_details %> Transmettre les données de l’usager (titre, description, lieu) telles que RDV-SP les envoie</label>
   <% if @account.provider == "pipedrive" %>
-    <label><%= f.check_box :link_persons %> Rattacher les rendez-vous à une Personne Pipedrive (nécessite l’option précédente)</label>
+    <label>
+      <%= f.check_box :link_persons %> Rattacher les rendez-vous à une Personne Pipedrive : celle de l’usager transféré
+      par le pont, sinon, avec l’option précédente seulement, celle qui porte son nom
+    </label>
   <% end %>
   <label>E-mail d’alerte <%= f.email_field :alert_email, size: 40 %></label>
   <%= f.submit "Enregistrer" %>
