@@ -12,7 +12,7 @@ Marianne, Remix Icon), which les-emplois vendors from a release tag.
 ## The theme
 
 - `vendor/assets/itou-theme/` holds the files of a release tag's `dist/` that the pages need: `stylesheets/app.css`,
-  Marianne (`woff2` and `woff`), Remix Icon (`woff2` and `woff`), the images `app.css` references, and the two logos
+  Marianne, the handwritten Covered By Your Grace and Remix Icon (`woff2` and `woff`), the images `app.css` references, and the two logos
   of the public header. `VERSION` names the tag (first: `v3.6.3`). Propshaft serves them and rewrites the CSS's
   relative `url()`s. The legacy `eot`/`ttf`/`svg` icon fonts are left out, so precompiling warns about those three.
 - `bin/update-itou-theme VERSION` downloads the tag's archive from GitHub and replaces the folder. No Node.

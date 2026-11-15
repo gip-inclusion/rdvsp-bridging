@@ -11,9 +11,11 @@ unzip -q "$tmp/theme.zip" -d "$tmp"
 dist=$(echo "$tmp"/itou-theme-*/dist)
 
 rm -rf "$dest"
-mkdir -p "$dest/stylesheets" "$dest/fonts/marianne" "$dest/fonts/remixicon" "$dest/images"
+mkdir -p "$dest/stylesheets" "$dest/fonts/marianne" "$dest/fonts/coveredbyyourgrace" "$dest/fonts/remixicon" \
+  "$dest/images"
 cp "$dist/stylesheets/app.css" "$dest/stylesheets/"
 cp "$dist"/fonts/marianne/*.woff2 "$dist"/fonts/marianne/*.woff "$dest/fonts/marianne/"
+cp "$dist"/fonts/coveredbyyourgrace/*.woff2 "$dist"/fonts/coveredbyyourgrace/*.woff "$dest/fonts/coveredbyyourgrace/"
 cp "$dist/fonts/remixicon/remixicon.woff2" "$dist/fonts/remixicon/remixicon.woff" "$dest/fonts/remixicon/"
 # The images app.css references, and the logos of the public header
 images=$(grep -o 'url(\.\./images/[^)]*)' "$dist/stylesheets/app.css" | sed 's#url(\.\./images/##; s#)##' | sort -u)
