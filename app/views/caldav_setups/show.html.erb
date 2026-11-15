@@ -2,40 +2,45 @@
 <p class="fs-sm text-muted mb-1">
   <%= @connection.provider_user_name || @connection.provider_user_id %> · <%= @connection.account.name %>
 </p>
-<% if @password %>
-  <h1 class="h2">Votre mot de passe</h1>
-  <div class="alert alert-warning" role="status">
-    <label class="form-label fw-bold" for="caldav-password">
-      Copiez-le maintenant dans RDV Service Public : il ne s’affichera plus.
-    </label>
-    <%= copy_field "caldav-password", @password %>
-  </div>
-  <p>Avec l’URL et l’identifiant :</p>
-<% else %>
-  <h1 class="h2">Connecter votre agenda à RDV Service Public</h1>
-  <p>
-    Vos rendez-vous <%= provider %> bloqueront vos créneaux dans RDV Service Public, et les RDV pris dans
-    RDV Service Public apparaîtront dans <%= provider %>.
-  </p>
-  <ol class="mb-4">
-    <li>Dans RDV Service Public, ouvrez <em>Synchronisation d’agenda → Connecter mon agenda via Caldav</em>.</li>
-    <li>Copiez-y l’URL et l’identifiant ci-dessous.</li>
-    <li>Générez votre mot de passe, puis copiez-le aussi.</li>
-  </ol>
-<% end %>
+<h1 class="h2">Connecter votre agenda à RDV Service Public</h1>
+<p>
+  Vos rendez-vous <%= provider %> bloqueront vos créneaux dans RDV Service Public, et les RDV pris dans
+  RDV Service Public apparaîtront dans <%= provider %>.
+</p>
+<ol class="mb-4">
+  <li>Dans RDV Service Public, ouvrez <em>Synchronisation d’agenda → Connecter mon agenda via Caldav</em>.</li>
+  <li>Copiez-y l’URL et l’identifiant ci-dessous.</li>
+  <li>Générez votre mot de passe, puis copiez-le aussi.</li>
+</ol>
 
 <label class="form-label" for="caldav-url">URL de l’agenda</label>
 <%= copy_field "caldav-url", "#{Rails.configuration.x.base_url}#{@connection.calendar_path}" %>
 <label class="form-label mt-3" for="caldav-username">Identifiant</label>
 <%= copy_field "caldav-username", @connection.username %>
 
-<% unless @password %>
+<% if @password %>
+  <div class="alert alert-warning mt-4 mb-0" role="status">
+    <label class="form-label fw-bold" for="caldav-password">
+      Votre mot de passe : copiez-le maintenant dans RDV Service Public, il ne s’affichera plus.
+    </label>
+    <%= copy_field "caldav-password", @password %>
+  </div>
+<% else %>
+  <% used_at = @connection.caldav_link_used_at %>
   <%= button_to caldav_setup_path(params[:token]),
                 class: "btn btn-primary btn-lg btn-block btn-ico justify-content-center mt-4" do %>
-    <i class="ri-key-2-line" aria-hidden="true"></i><span>Générer mon mot de passe</span>
+    <i class="ri-key-2-line" aria-hidden="true"></i>
+    <span><%= used_at ? "Générer un nouveau mot de passe" : "Générer mon mot de passe" %></span>
   <% end %>
   <p class="fs-sm text-muted mt-3 mb-0">
-    Il ne s’affichera qu’une fois, et ce lien cessera alors de fonctionner. Si votre agenda était déjà connecté, il
-    remplace l’ancien.
+    <% if used_at %>
+      Un mot de passe a déjà été généré le <%= paris_time(used_at) %> : un nouveau le remplacera.
+    <% else %>
+      Il ne s’affichera qu’une fois. Si votre agenda était déjà connecté, il remplace l’ancien.
+    <% end %>
   </p>
 <% end %>
+<p class="fs-sm text-muted mt-3 mb-0">
+  Ce lien est valable jusqu’au <%= paris_time(@connection.caldav_link_expires_at) %>, et 15 minutes après la première
+  génération d’un mot de passe.
+</p>

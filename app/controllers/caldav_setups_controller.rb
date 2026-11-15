@@ -5,18 +5,19 @@ class CaldavSetupsController < ApplicationController
   layout "public"
 
   before_action do
-    @connection = Connection.find_by_token_for(:caldav_setup, params[:token])
+    @connection = Connection.find_by_caldav_link(params[:token])
     message("Ce lien n’est plus valable", "Demandez un nouveau lien à l’équipe qui vous l’a envoyé.", :not_found) \
       unless @connection
   end
 
-  def show; end
+  # Shows a password just generated once: reloading offers another one
+  def show
+    @password = flash[:password]
+    response.headers["Cache-Control"] = "no-store" if @password
+  end
 
-  # A new password, shown once: it spends the link, and replaces any password RDV-SP already uses
   def create
-    @password = Connection.generate_password
-    @connection.update!(password: @password)
-    response.headers["Cache-Control"] = "no-store"
-    render :show
+    generated = @connection.use_caldav_link!
+    redirect_to caldav_setup_path(params[:token]), flash: { password: generated }
   end
 end

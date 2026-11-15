@@ -40,6 +40,7 @@ Rails.application.routes.draw do
     end
     resources :connections, only: %i[show update] do
       post :reset_password, on: :member
+      post :caldav_link, on: :member
       post :rebuild, on: :member
       resources :ignored_rdvs, only: %i[new create]
     end

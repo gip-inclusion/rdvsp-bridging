@@ -113,13 +113,37 @@
             <% end %>
           <% end %>
           <hr class="my-4">
-          <label class="form-label" for="caldav-setup-link">Lien à envoyer à l’agent</label>
-          <%= copy_field "caldav-setup-link",
-                         "#{Rails.configuration.x.base_url}#{caldav_setup_path(@connection.generate_token_for(:caldav_setup))}" %>
-          <div class="form-text">
-            L’agent y trouve l’URL et l’identifiant, et y génère son mot de passe. Valable 7 jours, jusqu’à ce qu’un
-            nouveau mot de passe soit créé.
-          </div>
+          <% link_open = @connection.caldav_link_open? %>
+          <% used_at = @connection.caldav_link_used_at %>
+          <% if link_open %>
+            <label class="form-label" for="caldav-setup-link">Lien à envoyer à l’agent</label>
+            <%= copy_field "caldav-setup-link",
+                           "#{Rails.configuration.x.base_url}#{caldav_setup_path(@connection.generate_token_for(:caldav_setup))}" %>
+            <div class="form-text mb-3">
+              <% if used_at %>
+                Utilisé le <%= paris_time(used_at) %>, valable jusqu’au
+                <%= paris_time(@connection.caldav_link_expires_at) %>.
+              <% else %>
+                L’agent y trouve l’URL et l’identifiant, et y génère son mot de passe. Valable jusqu’au
+                <%= paris_time(@connection.caldav_link_expires_at) %>, puis 15 minutes après sa première utilisation.
+              <% end %>
+            </div>
+          <% else %>
+            <span class="form-label d-block">Lien à envoyer à l’agent</span>
+            <p class="fs-sm text-muted mb-2">
+              <% if used_at %>
+                Le dernier lien a servi le <%= paris_time(used_at) %>.
+              <% elsif @connection.caldav_link_issued_at %>
+                Le dernier lien a expiré le <%= paris_time(@connection.caldav_link_expires_at) %>.
+              <% else %>
+                L’agent y trouvera l’URL et l’identifiant, et y générera son mot de passe.
+              <% end %>
+            </p>
+          <% end %>
+          <%= button_to caldav_link_admin_connection_path(@connection), class: "btn btn-outline-primary btn-sm btn-ico" do %>
+            <i class="ri-links-line" aria-hidden="true"></i>
+            <span><%= link_open ? "Créer un nouveau lien" : "Créer un lien pour l’agent" %></span>
+          <% end %>
         </div>
         <div class="c-box mb-3 mb-md-4">
           <h2 class="h3">Options</h2>

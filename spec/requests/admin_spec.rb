@@ -33,6 +33,19 @@ RSpec.describe "Admin" do
     expect(flash[:alert]).to include("Pipedrive")
   end
 
+  it "creates the link to send to an agent, on the configured base URL" do
+    connection = create(:connection)
+    headers = { "Authorization" => ActionController::HttpAuthentication::Basic.encode_credentials("admin", "admin"),
+                "User-Agent" => browser, "Host" => "evil.example" }
+
+    get("/admin/connections/#{connection.id}", headers:)
+    expect(response.body).to include("Créer un lien pour l’agent").and not_include("/agenda/")
+
+    post("/admin/connections/#{connection.id}/caldav_link", headers:)
+    follow_redirect!(headers:)
+    expect(response.body).to include("http://localhost:3010/agenda/", "Créer un nouveau lien")
+  end
+
   it "speaks French, durations included" do
     connection = create(:connection, last_seen_at: 5.minutes.ago)
     auth = ActionController::HttpAuthentication::Basic.encode_credentials("admin", "admin")
@@ -49,7 +62,7 @@ RSpec.describe "Admin" do
     get "/admin/connections/#{connection.id}",
         headers: { "Authorization" => auth, "User-Agent" => browser, "X-Forwarded-Host" => "evil.example" }
 
-    expect(response.body).to include("http://localhost:3010#{connection.calendar_path}", "http://localhost:3010/agenda/")
+    expect(response.body).to include("http://localhost:3010#{connection.calendar_path}")
     expect(response.body).not_to include("evil.example")
   end
 end

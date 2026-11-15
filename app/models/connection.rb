@@ -1,5 +1,6 @@
 class Connection < ApplicationRecord
   include SyncCollection
+  include CaldavLink
 
   BASELINE_QUIET = 1.minute
   BASELINE_LIMIT = 15.minutes
@@ -11,9 +12,6 @@ class Connection < ApplicationRecord
 
   has_secure_token :public_id
   has_secure_token :username, length: 24
-  # The link to the agent's credentials page, spent as soon as the password changes. Tokens carry this value in clear:
-  # a few characters of the digest are enough to tell passwords apart
-  generates_token_for(:caldav_setup, expires_in: 7.days) { password_digest.last(10) }
 
   validates :provider_user_id, presence: true, uniqueness: { scope: :account_id }
   validates :password_digest, presence: true
