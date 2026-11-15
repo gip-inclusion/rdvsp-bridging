@@ -236,3 +236,7 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
     open 7 days and 15 minutes after its first use, spent by a newer link. The page creates the password only when the
     agent clicks, shows it once under the instructions, offers another on reload, and says each replaces the previous
     one; no password is ever stored in clear (`docs/ui.md`).
+43. **(you → me)** The "Prendre RDV" button acts with the clicking agent's own RDV-SP authorization, given at their first
+    click (OAuth through the same callback, then straight to the plan), because RDV-SP lets only the agent whose token
+    created an RDV plan open it. The account's authorization stays the import's. A usager transferred by a click is
+    created in that agent's name (`docs/pipedrive-rdv-plan-button.md`).
