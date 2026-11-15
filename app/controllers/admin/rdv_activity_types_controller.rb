@@ -13,8 +13,8 @@ class Admin::RdvActivityTypesController < Admin::BaseController
 
   def update
     name = params[:name].to_s.strip
-    key = name.present? ? client.create_activity_type(name:, icon_key: "calendar")["key_string"] : params.expect(:key)
-    @account.update!(rdv_activity_type_key: key)
+    type = name.present? ? client.create_activity_type(name:, icon_key: "calendar") : chosen_type
+    @account.update!(rdv_activity_type_key: type["key_string"], rdv_activity_type_name: type["name"])
     redirect_to admin_account_path(@account), notice: "Type d’activité enregistré."
   rescue Pipedrive::Error => e
     redirect_to admin_account_path(@account), alert: "Pipedrive a refusé le type d’activité : #{e.message}"
@@ -23,4 +23,9 @@ class Admin::RdvActivityTypesController < Admin::BaseController
   private
 
   def client = Pipedrive::Client.new(@account.api_token)
+
+  def chosen_type
+    key = params.expect(:key)
+    client.activity_types.find { it["key_string"] == key } || { "key_string" => key }
+  end
 end

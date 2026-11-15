@@ -18,6 +18,7 @@ module Pipedrive
       account.assign_attributes(name: me["company_name"], provider_company_domain: me["company_domain"],
                                 api_token: @api_token, alert_email: @alert_email.presence || account.alert_email)
       account.rdv_activity_type_key = rdv_activity_type_key
+      account.rdv_activity_type_name = RDV_ACTIVITY_TYPE_NAME
       save_record!(account)
       subscribe_to_webhooks(account)
       result.account = account
