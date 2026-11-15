@@ -10,10 +10,12 @@ module UsagerImports
       error.codes.any? { |attribute, codes| attribute.end_with?("external_id") && codes.include?("taken") }
     end
 
-    def initialize(account:, organisation_id:, usager_import: nil)
+    # As the agent of the account's authorization, unless another agent's is given
+    def initialize(account:, organisation_id:, usager_import: nil, authorization: account.rdvsp_authorization)
       @account = account
       @organisation_id = organisation_id
       @usager_import = usager_import
+      @authorization = authorization
     end
 
     # RDV-SP rejects some e-mails and phones (a typo, a foreign number): the usager is then created without both.
@@ -45,6 +47,6 @@ module UsagerImports
 
     def contact?(person) = person.email.present? || person.phone.present?
 
-    def client = @client ||= Rdvsp::Client.new(@account.rdvsp_authorization)
+    def client = @client ||= Rdvsp::Client.new(@authorization)
   end
 end

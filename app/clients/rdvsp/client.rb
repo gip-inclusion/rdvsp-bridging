@@ -48,6 +48,7 @@ module Rdvsp
     def handle(response)
       case response.status
       when 200..299 then response.body
+      when 403 then raise ForbiddenError, "RDV-SP refused the agent (403)"
       when 422 then raise UnprocessableError, response.body.try(:[], "errors")
       else raise Error, "RDV-SP error #{response.status}"
       end

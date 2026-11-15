@@ -1,17 +1,18 @@
 module RdvPlans
   # Opens an RDV-SP RDV plan for a Pipedrive person, where the agent picks the motif and the slot. A person not
-  # transferred yet is transferred first, with the import's rules, into the account's organisation.
+  # transferred yet is transferred first, with the import's rules, into the account's organisation. All of it with
+  # the clicking agent's authorization: RDV-SP lets only the agent who created a plan open it.
   # Failures set result.reason.
   class Start < BaseService
-    def initialize(account:, person_id:, return_url:)
+    def initialize(account:, authorization:, person_id:, return_url:)
       @account = account
+      @authorization = authorization
       @person_id = person_id.to_s
       @return_url = return_url
     end
 
     def call
-      authorization = @account.rdvsp_authorization
-      stop(:no_authorization) if authorization.nil? || authorization.lost?
+      stop(:no_authorization) if @authorization.nil? || @authorization.lost?
 
       # By id, never by external_id: RDV-SP's lookup by it was broken (betagouv/rdv-service-public#6937)
       plan = client.create_rdv_plan(user: { id: usager_id }, return_url: @return_url,
@@ -19,6 +20,8 @@ module RdvPlans
       result.url = plan.fetch("url")
     rescue Rdvsp::AuthenticationError
       stop(:no_authorization)
+    rescue Rdvsp::ForbiddenError
+      stop(:forbidden)
     end
 
     private
@@ -34,7 +37,7 @@ module RdvPlans
 
       index = UsagerImports::UsagerIndex.new
       client.each_organisation_user(organisation_id) { index.add_usager(it) }
-      transfer = UsagerImports::Transfer.new(account: @account, organisation_id:)
+      transfer = UsagerImports::Transfer.new(account: @account, organisation_id:, authorization: @authorization)
       existing_id = index.usager_id(person)
       return transfer.record(person, existing_id).rdvsp_user_id if existing_id
 
@@ -66,6 +69,6 @@ module RdvPlans
       fail!(reason.to_s)
     end
 
-    def client = @client ||= Rdvsp::Client.new(@account.rdvsp_authorization)
+    def client = @client ||= Rdvsp::Client.new(@authorization)
   end
 end

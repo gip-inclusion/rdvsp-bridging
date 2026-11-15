@@ -23,6 +23,8 @@ Rails.application.routes.draw do
 
   scope "pipedrive", controller: :pipedrive_app do
     get "prendre-rdv", action: :rdv_plan, as: :pipedrive_rdv_plan
+    post "autoriser", action: :authorize, as: :pipedrive_authorize
+    get "prendre-rdv/suite", action: :resume, as: :pipedrive_rdv_plan_resume
     get "retour/:token", action: :back, as: :pipedrive_back, constraints: { token: %r{[^/]+} }
     get "app/callback", action: :callback, as: :pipedrive_app_callback
   end
