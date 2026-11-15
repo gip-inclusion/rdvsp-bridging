@@ -44,8 +44,10 @@ class RdvspAuthorization < ApplicationRecord
   # agent of their connection, when there is one. The new token is revoked otherwise.
   def ensure_connection_agent!(email)
     expected = provider_user_id && account.connections.find_by(provider_user_id:)&.agent_email
-    return if expected.blank? || email.to_s.casecmp?(expected)
+    return if expected.blank? || email.to_s.strip.casecmp?(expected.strip)
 
+    Rails.logger.warn("RDV-SP authorized another agent than the connection's, for Pipedrive user #{provider_user_id} " \
+                      "of account #{account_id}")
     revoke
     raise OtherAgent, email
   end

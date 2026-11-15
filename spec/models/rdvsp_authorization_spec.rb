@@ -34,6 +34,24 @@ RSpec.describe RdvspAuthorization, :rdvsp do
       .to have_attributes(provider_user_id: "501", agent_id: 78, agent_email: "lea@example.fr")
   end
 
+  it "keeps an agent's tokens when RDV-SP brings back another agent than the one of their connection" do
+    create(:connection, account:, provider_user_id: "501", agent_email: " Lea@example.fr ")
+    lea = create(:rdvsp_authorization, account:, provider_user_id: "501", agent_id: 78, access_token: "lea-access")
+    stub_rdvsp_token(access_token: "paul-access", refresh_token: "paul-refresh")
+    stub_rdvsp_me(id: 79, email: "paul@example.fr")
+    stub_request(:post, "#{rdvsp_url}/oauth/revoke")
+
+    expect { described_class.authorize!(account:, provider_user_id: "501", code: "abc", redirect_uri: "https://x/cb") }
+      .to raise_error(described_class::OtherAgent)
+    expect(WebMock).to have_requested(:post, "#{rdvsp_url}/oauth/revoke")
+      .with(body: hash_including(token: "paul-refresh"))
+    expect(lea.reload).to have_attributes(agent_id: 78, access_token: "lea-access")
+
+    stub_rdvsp_me(id: 78, email: "lea@example.fr")
+    described_class.authorize!(account:, provider_user_id: "501", code: "abc", redirect_uri: "https://x/cb")
+    expect(lea.reload.access_token).to eq("paul-access")
+  end
+
   it "goes away with its account, as do the account's imports" do
     create(:rdvsp_authorization, account:)
     create(:rdvsp_authorization, account:, provider_user_id: "501")

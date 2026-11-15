@@ -25,10 +25,11 @@ class RdvspAuthorizationsController < ApplicationController
 
     authorize
   rescue RdvspAuthorization::OtherAgent => e
+    used = e.agent_email ? "avec le compte #{e.agent_email}, qui n’est pas celui" : "avec un compte qui n’est pas celui"
     message("Vous êtes connecté à RDV Service Public avec un autre compte",
-            "RDV Service Public vous a connecté en tant que #{e.agent_email || 'un autre agent'}, qui n’est pas " \
-            "l’agent de votre compte Pipedrive. Déconnectez-vous de RDV Service Public, puis #{start_over}.",
-            :forbidden)
+            "RDV Service Public vous a connecté #{used} de votre connexion Pont RDV. Déconnectez-vous de RDV Service " \
+            "Public, puis #{start_over}. Si c’est bien votre compte, demandez à l’équipe de Pont RDV de corriger " \
+            "l’e-mail de votre connexion.", :forbidden)
   rescue Rdvsp::Error => e
     Rails.logger.warn("RDV-SP authorization failed: #{e.message}")
     message("RDV Service Public n’a pas répondu comme prévu", "#{start_over.upcase_first} pour réessayer.",
