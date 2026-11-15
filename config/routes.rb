@@ -16,6 +16,11 @@ Rails.application.routes.draw do
     get "callback", action: :callback, as: :rdvsp_callback
   end
 
+  scope "agenda", controller: :caldav_setups do
+    get ":token", action: :show, as: :caldav_setup, constraints: { token: %r{[^/]+} }
+    post ":token", action: :create, constraints: { token: %r{[^/]+} }
+  end
+
   scope "pipedrive", controller: :pipedrive_app do
     get "prendre-rdv", action: :rdv_plan, as: :pipedrive_rdv_plan
     get "retour/:token", action: :back, as: :pipedrive_back, constraints: { token: %r{[^/]+} }
@@ -35,6 +40,7 @@ Rails.application.routes.draw do
     end
     resources :connections, only: %i[show update] do
       post :reset_password, on: :member
+      post :caldav_link, on: :member
       post :rebuild, on: :member
       resources :ignored_rdvs, only: %i[new create]
     end

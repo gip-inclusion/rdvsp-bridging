@@ -37,6 +37,13 @@ class Admin::ConnectionsController < Admin::BaseController
     redirect_to admin_connection_path(connection), flash: { password: }
   end
 
+  # A new link for the agent to get their credentials; the previous one stops working
+  def caldav_link
+    connection = Connection.find(params.expect(:id))
+    connection.start_caldav_link!
+    redirect_to admin_connection_path(connection), notice: "Lien créé : copiez-le pour l’envoyer à l’agent."
+  end
+
   def rebuild
     connection = Connection.find(params.expect(:id))
     RebuildConnectionJob.perform_later(connection)

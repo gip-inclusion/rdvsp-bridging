@@ -1,6 +1,15 @@
 module ApplicationHelper
   def paris_time(time) = time && l(time.in_time_zone("Europe/Paris"), format: :seconds)
 
+  # A read-only field and its "Copier" button (app/assets/javascripts/copy.js); a <label for> names it
+  def copy_field(id, value)
+    tag.div(class: "input-group") do
+      tag.input(id:, value:, readonly: true, class: "form-control pont-code") +
+        tag.button(type: "button", class: "btn btn-outline-primary btn-ico-only", data: { copy_target: id },
+                   aria: { label: "Copier" }) { tag.i(class: "ri-file-copy-line", aria: { hidden: true }) }
+    end
+  end
+
   def rdv_status(rdv)
     if rdv.ignored? then rdv.cancelled? ? "ignoré (annulé depuis)" : "ignoré"
     elsif rdv.state == "failed" then "en échec"

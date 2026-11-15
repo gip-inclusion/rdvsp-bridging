@@ -1,5 +1,6 @@
 class Connection < ApplicationRecord
   include SyncCollection
+  include CaldavLink
 
   BASELINE_QUIET = 1.minute
   BASELINE_LIMIT = 15.minutes

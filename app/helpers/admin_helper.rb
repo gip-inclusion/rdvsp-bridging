@@ -1,4 +1,4 @@
-# Badges, French counts and copy fields of the admin pages (docs/ui.md)
+# Badges and French counts of the admin pages (docs/ui.md)
 module AdminHelper
   BADGE_TONES = {
     success: "bg-success-lighter text-success", info: "bg-info-lighter text-info",
@@ -48,14 +48,5 @@ module AdminHelper
   def usager_import_badge(usager_import)
     state = usager_import.state
     badge(ApplicationHelper::USAGER_IMPORT_STATES.fetch(state).upcase_first, USAGER_IMPORT_TONES.fetch(state))
-  end
-
-  # A read-only field and its "Copier" button (app/assets/javascripts/copy.js); a <label for> names it
-  def copy_field(id, value)
-    tag.div(class: "input-group") do
-      tag.input(id:, value:, readonly: true, class: "form-control pont-code") +
-        tag.button(type: "button", class: "btn btn-outline-primary btn-ico-only", data: { copy_target: id },
-                   aria: { label: "Copier" }) { tag.i(class: "ri-file-copy-line", aria: { hidden: true }) }
-    end
   end
 end

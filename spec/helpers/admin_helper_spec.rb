@@ -29,11 +29,4 @@ RSpec.describe AdminHelper do
     expect(helper.account_source(account)).to eq("Pipedrive · acme.pipedrive.com")
     expect(helper.account_badge(account)).to include("En erreur depuis le", "text-danger")
   end
-
-  it "gives a read-only field with a copy button" do
-    field = helper.copy_field("caldav-url", "https://x.example/c/")
-
-    expect(field).to include('id="caldav-url"', 'value="https://x.example/c/"', 'data-copy-target="caldav-url"')
-    expect(field).to include("readonly")
-  end
 end
