@@ -94,6 +94,7 @@ RSpec.describe "Pipedrive app: the Prendre RDV button and the installation", :pi
     end
 
     it "has them authorize the bridge once, then opens the plan with their own token" do
+      create(:connection, account:, provider_user_id: "501", agent_email: "Lea@Example.fr")
       click
       expect(response.body).to include("Autoriser Pont RDV", "une seule fois")
 
@@ -113,6 +114,22 @@ RSpec.describe "Pipedrive app: the Prendre RDV button and the installation", :pi
       expect(plan).to have_been_requested
       expect(account.rdvsp_agent_authorizations.sole).to have_attributes(provider_user_id: "501", agent_id: 78)
       expect(account.rdvsp_authorization.access_token).to eq("import-access")
+    end
+
+    it "refuses another RDV-SP agent than the one of their connection" do
+      create(:connection, account:, provider_user_id: "501", agent_email: "lea@example.fr")
+      click
+      state = authorize
+      stub_rdvsp_token(refresh_token: "paul-refresh")
+      stub_rdvsp_me(id: 79, email: "paul@example.fr")
+      revoke = stub_request(:post, "#{rdvsp_url}/oauth/revoke").with(body: hash_including(token: "paul-refresh"))
+
+      get "/rdvsp/callback", params: { code: "abc", state: }, headers: browser
+
+      expect(response).to have_http_status(:forbidden)
+      expect(response.body).to include("autre compte", "paul@example.fr")
+      expect(revoke).to have_been_requested
+      expect(account.rdvsp_agent_authorizations).to be_empty
     end
 
     it "asks again when their authorization is lost" do

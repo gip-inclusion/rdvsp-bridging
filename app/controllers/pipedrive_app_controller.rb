@@ -55,7 +55,8 @@ class PipedriveAppController < ApplicationController
       return message("Cette demande a expiré", "Cliquez à nouveau sur « Prendre RDV » dans Pipedrive.", :not_found)
     end
 
-    start_rdvsp_oauth("account_id" => account_id, "provider_user_id" => provider_user_id, "person_id" => person_id)
+    start_rdvsp_oauth("flow" => "button", "account_id" => account_id, "provider_user_id" => provider_user_id,
+                      "person_id" => person_id)
   end
 
   def resume

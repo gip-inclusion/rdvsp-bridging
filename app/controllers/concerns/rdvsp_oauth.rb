@@ -1,5 +1,5 @@
 # Sends someone to RDV-SP to authorize the bridge. RDV-SP brings them back to RdvspAuthorizationsController#callback,
-# the only redirect URI it knows, with the state kept here along what the callback needs.
+# the only redirect URI it knows, with the state kept here alongside what the callback needs.
 module RdvspOauth
   private
 

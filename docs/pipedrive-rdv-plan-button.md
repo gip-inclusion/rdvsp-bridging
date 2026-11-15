@@ -51,7 +51,10 @@ An RDV plan belongs to the agent whose token created it (`planning_agent`), and 
 - A click from a user without an authorization, or whose authorization is lost, shows a page saying why Pont RDV asks
   (once), with one button. It posts a signed request (account, user, person; 1 hour) that starts OAuth with the
   account's flow: same `state` in the session, same `/rdvsp/callback`, the only redirect URI RDV-SP registered. The
-  session also carries the user and the person.
+  session also carries the flow (`button`; `account` for the link), the user and the person.
+- When the Pipedrive user has a connection with an agent e-mail, the callback refuses, and revokes, a token of
+  another RDV-SP agent: on a shared computer, RDV-SP may log someone else in silently, and the agent couldn't undo a
+  wrong authorization alone.
 - The callback stores the agent's authorization (replacing and revoking their earlier one), puts the account, user and
   person in the session, and redirects to `/pipedrive/prendre-rdv/suite`, which goes on with step 2: the agent lands
   on the plan they asked for. Declining, or RDV-SP failing, says to click "Prendre RDV" again.
