@@ -31,7 +31,8 @@ Marianne, Remix Icon), which les-emplois vendors from a release tag.
   column below.
 - **Public** (`layouts/public`): a header with the République française block, the Plateforme de l'inclusion logo, and
   "Pont RDV" after a vertical rule; a grey band with one centered `c-box`; a footer "Pont RDV · Plateforme de
-  l'inclusion". `shared/message` shows a check icon for a success (2xx) and a warning icon otherwise.
+  l'inclusion". `shared/message` shows a check icon for the two successes ("C'est fait", "Pont RDV est installé") and a
+  warning icon otherwise.
 
 ## Pages
 
@@ -42,8 +43,9 @@ Marianne, Remix Icon), which les-emplois vendors from a release tag.
   - Connexions: one row per connection, its agent and a badge (below);
   - RDV Service Public: who authorized and when, the organisation with "Changer", the "Importer des bénéficiaires" and
     "Retirer l'autorisation" buttons, the authorization link with "Copier", the list of imports with a state badge;
-  - Pipedrive: domain, activity type **by name** (with "Changer"; the name is read from Pipedrive's activity types on
-    each display, and the key is shown when Pipedrive fails), live updates (webhook);
+  - Pipedrive: domain, activity type **by name** (with "Changer"; `rdv_activity_type_name` is set by onboarding and by
+    the activity type page, so accounts onboarded before show the key until the type is chosen again), live updates
+    (webhook);
   - Options: switches with their help text under the label, the alert e-mail, "Enregistrer".
 - **Connexion**:
   - État: four figures (last RDV-SP visit, last rebuild, busy times, failed RDVs) and "Reconstruire";
