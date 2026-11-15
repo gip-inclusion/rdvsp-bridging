@@ -65,12 +65,17 @@ ignored = info, pending = warning, failed = danger, cancelled = neutral.
 
 ## The agent's credentials page
 
-The admin used to read the CalDAV credentials out to the agent. The connection's "Identifiants CalDAV" block now gives
-a link to send instead: `/agenda/<token>`, a `generates_token_for(:caldav_setup)` token valid 7 days and tied to the
-last characters of the password digest, so any new password spends it. The public page shows the URL and username
-with "Copier" buttons, and a "Générer mon mot de passe" button: the password exists only once clicked (a link preview
-can't create it), is shown once (`Cache-Control: no-store`) and replaces any previous one, which the page says. The
-bridge never stores a password in clear, so it can't show the current one.
+The admin used to read the CalDAV credentials out to the agent. The connection's "Identifiants CalDAV" block now
+creates a link to send instead (`CaldavLink`): one per connection at a time, `/agenda/<token>` where the token
+(`generates_token_for(:caldav_setup)`) names the link by its creation time, so creating another one spends it. A link
+is open 7 days, and only 15 minutes more once the agent has generated a password through it (`caldav_link_used_at`),
+so they can come back to it while they fill RDV-SP in. The admin sees when it served or expired.
+
+The public page keeps the instructions, URL and username (with "Copier" buttons) in view, with a "Générer mon mot de
+passe" button below: the password exists only once clicked (a link preview can't create it) and replaces any previous
+one, which the page says. It shows under the instructions once (through the flash, `Cache-Control: no-store`);
+reloading offers "Générer un nouveau mot de passe" instead. The bridge never stores a password in clear, so it can't
+show the current one.
 
 ## Not in this change
 
