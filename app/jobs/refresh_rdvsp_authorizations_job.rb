@@ -2,6 +2,7 @@
 # application (CronJob::DestroyOldOauthObjects): an agent with both the account's authorization and their own for
 # "Prendre RDV" would lose the one they leave idle. A refresh issues a new token.
 class RefreshRdvspAuthorizationsJob < ApplicationJob
+  # Measured from expires_at, close to the issue: RDV-SP's access tokens last 2 hours (Doorkeeper's default)
   REFRESH_AFTER = 20.days
 
   def perform
