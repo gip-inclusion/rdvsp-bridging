@@ -12,7 +12,7 @@ module CaldavLink
   end
 
   class_methods do
-    def find_by_caldav_link(token) = find_by_token_for(:caldav_setup, token)&.then { it if it.caldav_link_open? }
+    def from_caldav_link(token) = find_by_token_for(:caldav_setup, token)&.then { it if it.caldav_link_open? }
   end
 
   def start_caldav_link! = update!(caldav_link_issued_at: Time.current, caldav_link_used_at: nil)

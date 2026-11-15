@@ -36,7 +36,7 @@ RSpec.describe "Admin" do
   it "creates the link to send to an agent, on the configured base URL" do
     connection = create(:connection)
     headers = { "Authorization" => ActionController::HttpAuthentication::Basic.encode_credentials("admin", "admin"),
-                "User-Agent" => browser, "Host" => "evil.example" }
+                "User-Agent" => browser, "Host" => "evil.example", }
 
     get("/admin/connections/#{connection.id}", headers:)
     expect(response.body).to include("Créer un lien pour l’agent").and not_include("/agenda/")

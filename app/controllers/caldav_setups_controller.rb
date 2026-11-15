@@ -5,7 +5,7 @@ class CaldavSetupsController < ApplicationController
   layout "public"
 
   before_action do
-    @connection = Connection.find_by_caldav_link(params[:token])
+    @connection = Connection.from_caldav_link(params[:token])
     message("Ce lien n’est plus valable", "Demandez un nouveau lien à l’équipe qui vous l’a envoyé.", :not_found) \
       unless @connection
   end
