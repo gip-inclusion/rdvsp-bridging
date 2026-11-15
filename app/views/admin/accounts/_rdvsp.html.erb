@@ -18,7 +18,7 @@
           <strong>n° <%= account.rdvsp_organisation_id %></strong>
         <% else %>
           <strong>pas encore choisie</strong>
-          <span class="fs-sm text-muted">À défaut, celle de l’agent s’il n’en a qu’une.</span>
+          <span class="fs-sm text-muted">À défaut, celle de l’agent qui clique, s’il n’en a qu’une.</span>
         <% end %>
         <% unless authorization.lost? %>
           <%= link_to "Changer", edit_admin_account_rdvsp_organisation_path(account), class: "btn-link fs-sm ms-2" %>
@@ -72,11 +72,10 @@
     <ul class="list-group list-group-flush pont-rows">
       <% agent_authorizations.each do |agent_authorization| %>
         <li class="list-group-item px-0 d-flex gap-2 justify-content-between align-items-center">
-          <div class="text-break">
-            <strong>
-              <%= names[agent_authorization.provider_user_id] ||
+          <% name = names[agent_authorization.provider_user_id] ||
                     "Utilisateur Pipedrive n° #{agent_authorization.provider_user_id}" %>
-            </strong>
+          <div class="text-break">
+            <strong><%= name %></strong>
             <div class="fs-sm text-muted">
               <%= agent_authorization.agent_email || "agent n° #{agent_authorization.agent_id}" %>
               · le <%= paris_time(agent_authorization.created_at) %>
@@ -85,7 +84,7 @@
           <div class="d-flex align-items-center gap-2 flex-shrink-0">
             <% if agent_authorization.lost? %><%= badge("Perdue", :danger) %><% end %>
             <%= button_to admin_account_rdvsp_agent_authorization_path(account, agent_authorization), method: :delete,
-                          class: "btn btn-outline-danger btn-sm btn-ico", "aria-label": "Retirer",
+                          class: "btn btn-outline-danger btn-sm btn-ico", "aria-label": "Retirer l’autorisation de #{name}",
                           form: { onsubmit: "return confirm('Retirer l’autorisation de cet agent ?')" } do %>
               <i class="ri-delete-bin-line" aria-hidden="true"></i>
             <% end %>
