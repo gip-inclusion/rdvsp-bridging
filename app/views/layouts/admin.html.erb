@@ -1,26 +1,38 @@
 <!DOCTYPE html>
 <html lang="fr">
   <head>
-    <title>rdvsp-bridging · admin</title>
+    <title>Pont RDV · admin</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
-    <style>
-      body { font-family: system-ui, sans-serif; max-width: 960px; margin: 2rem auto; padding: 0 1rem; color: #161616; }
-      a { color: #000091; }
-      table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
-      th, td { text-align: left; padding: .4rem .6rem; border-bottom: 1px solid #ddd; vertical-align: top; }
-      .ok { color: #18753c; } .ko { color: #ce0500; } .muted { color: #666; }
-      .flash { padding: .6rem 1rem; background: #e8edff; } .flash.alert { background: #ffe9e9; }
-      code, pre { background: #f6f6f6; padding: .1rem .3rem; } pre { padding: 1rem; overflow-x: auto; }
-      form.inline { display: inline; } label { display: block; margin: .6rem 0; }
-    </style>
+    <%= stylesheet_link_tag "stylesheets/app", "pont-rdv" %>
+    <%= javascript_include_tag "copy", defer: true %>
   </head>
   <body>
-    <p><a href="<%= admin_root_path %>">rdvsp-bridging</a></p>
-    <% flash.each do |type, message| %>
-      <% next if type == "password" %>
-      <p class="flash <%= type %>"><%= message %></p>
-    <% end %>
-    <%= yield %>
+    <header class="pont-header" role="banner">
+      <div class="container pont-header__row">
+        <%= link_to admin_root_path, class: "pont-brand" do %>
+          <span class="pont-brand__mark"><i class="ri-arrow-left-right-line" aria-hidden="true"></i></span>
+          <span><span class="pont-brand__name">Pont RDV</span><span class="pont-brand__tag">Administration</span></span>
+        <% end %>
+        <nav class="pont-header__nav" aria-label="Navigation principale">
+          <%= link_to admin_root_path, class: "btn btn-outline-primary btn-ico bg-white" do %>
+            <i class="ri-building-line" aria-hidden="true"></i><span class="d-none d-sm-inline">Comptes</span>
+          <% end %>
+        </nav>
+      </div>
+    </header>
+    <main class="s-main" role="main">
+      <% messages = flash.to_h.except("password") %>
+      <% if messages.any? %>
+        <div class="container pont-flashes">
+          <% messages.each do |type, message| %>
+            <div class="alert <%= type == "alert" ? "alert-danger" : "alert-success" %>" role="status">
+              <p class="mb-0"><%= message %></p>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+      <%= yield %>
+    </main>
   </body>
 </html>

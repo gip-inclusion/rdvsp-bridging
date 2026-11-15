@@ -27,7 +27,7 @@ class RdvspAuthorizationsController < ApplicationController
 
     RdvspAuthorization.authorize!(account: Account.find(pending["account_id"]), code: params[:code].to_s, redirect_uri:)
     message("C’est fait", "Pont RDV peut maintenant créer des usagers dans RDV Service Public en votre nom. " \
-                          "Vous pouvez fermer cette page.")
+                          "Vous pouvez fermer cette page.", success: true)
   rescue Rdvsp::Error => e
     Rails.logger.warn("RDV-SP authorization failed: #{e.message}")
     message("RDV Service Public n’a pas répondu comme prévu", "Rouvrez le lien qui vous a été envoyé pour réessayer.",

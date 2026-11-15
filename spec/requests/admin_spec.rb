@@ -14,6 +14,14 @@ RSpec.describe "Admin" do
     Admin::BaseController::RATE_LIMIT_STORE.clear
   end
 
+  it "dresses the pages in the itou theme" do
+    auth = ActionController::HttpAuthentication::Basic.encode_credentials("admin", "admin")
+
+    get "/admin", headers: { "Authorization" => auth, "User-Agent" => browser }
+
+    expect(response.body).to match(%r{/assets/stylesheets/app-\w+\.css}).and match(%r{/assets/pont-rdv-\w+\.css})
+  end
+
   it "speaks French, durations included" do
     connection = create(:connection, last_seen_at: 5.minutes.ago)
     auth = ActionController::HttpAuthentication::Basic.encode_credentials("admin", "admin")

@@ -2,5 +2,7 @@
 module PublicMessages
   private
 
-  def message(title, text, status = :ok) = render("shared/message", locals: { title:, text: }, status:)
+  def message(title, text, status = :ok, success: false)
+    render("shared/message", locals: { title:, text:, success: }, status:)
+  end
 end

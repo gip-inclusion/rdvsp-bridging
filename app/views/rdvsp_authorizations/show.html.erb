@@ -1,11 +1,24 @@
-<h1>Autoriser Pont RDV</h1>
+<p class="fs-sm text-muted mb-1">Demande de <%= @account.name %></p>
+<h1 class="h2">Autoriser Pont RDV</h1>
 <p>
   <strong><%= @account.name %></strong> vous demande d’autoriser Pont RDV à créer des usagers dans
   RDV Service Public en votre nom, à partir de ses bénéficiaires.
 </p>
-<p>
-  Vous allez vous connecter à RDV Service Public, qui vous demandera de confirmer. Pont RDV agira avec vos droits
-  d’agent, et RDV Service Public enregistrera chaque usager créé à votre nom.
+<ul class="pont-steps">
+  <li>
+    <i class="ri-shield-check-line" aria-hidden="true"></i>
+    <span>Vous allez vous connecter à RDV Service Public, qui vous demandera de confirmer.</span>
+  </li>
+  <li><i class="ri-user-add-line" aria-hidden="true"></i><span>Pont RDV agira avec vos droits d’agent.</span></li>
+  <li>
+    <i class="ri-file-list-3-line" aria-hidden="true"></i>
+    <span>RDV Service Public enregistrera chaque usager créé à votre nom.</span>
+  </li>
+</ul>
+<%= button_to rdvsp_authorization_link_path(params[:token]),
+              class: "btn btn-primary btn-lg btn-block btn-ico justify-content-center" do %>
+  <span>Continuer vers RDV Service Public</span><i class="ri-arrow-right-line" aria-hidden="true"></i>
+<% end %>
+<p class="fs-sm text-muted mt-3 mb-0">
+  Pour retirer cette autorisation plus tard, demandez-le à l’équipe qui vous a envoyé ce lien.
 </p>
-<%= button_to "Continuer vers RDV Service Public", rdvsp_authorization_link_path(params[:token]) %>
-<p class="muted">Pour retirer cette autorisation plus tard, demandez-le à l’équipe qui vous a envoyé ce lien.</p>

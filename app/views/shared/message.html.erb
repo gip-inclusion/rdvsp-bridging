@@ -1,2 +1,10 @@
-<h1><%= title %></h1>
-<p><%= text %></p>
+<%# locals: (title:, text:, success: false) %>
+<div class="text-center">
+  <% if success %>
+    <i class="ri-checkbox-circle-fill text-success pont-public__icon" aria-hidden="true"></i>
+  <% else %>
+    <i class="ri-error-warning-line text-warning pont-public__icon" aria-hidden="true"></i>
+  <% end %>
+  <h1 class="h2 mt-3"><%= title %></h1>
+  <p class="mb-0"><%= text %></p>
+</div>
