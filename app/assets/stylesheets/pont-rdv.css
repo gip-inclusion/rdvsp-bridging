@@ -1,0 +1,39 @@
+/* Pont RDV's own rules, on top of the itou theme (vendor/assets/itou-theme, docs/ui.md) */
+.pont-header { border-bottom: 1px solid #dcdcea; background: #fff; }
+.pont-header__row { display: flex; align-items: center; gap: 1rem; padding-block: .9rem; }
+.pont-header__rf { height: 3rem; width: auto; }
+.pont-header__platform { height: 2.5rem; width: auto; }
+.pont-header__service {
+  font-weight: 800; font-size: 1.25rem; line-height: 1.1; white-space: nowrap;
+  padding-left: .75rem; border-left: 1px solid #dcdcea;
+}
+.pont-header__nav { margin-left: auto; display: flex; gap: .5rem; align-items: center; }
+@media (max-width: 575.98px) { .pont-header__row { gap: .75rem; } }
+@media (min-width: 768px) {
+  .pont-header__rf { height: 3.5rem; }
+  .pont-header__platform { height: 3rem; }
+  .pont-header__service { font-size: 1.5rem; padding-left: 1rem; }
+}
+
+.pont-brand { display: inline-flex; align-items: center; gap: .65rem; text-decoration: none; color: #000638; }
+.pont-brand__mark {
+  width: 2.5rem; height: 2.5rem; border-radius: .6rem; background: #000638; color: #fff;
+  display: grid; place-items: center; font-size: 1.35rem; flex: none;
+}
+.pont-brand__name { display: block; font-weight: 800; font-size: 1.25rem; line-height: 1.1; }
+.pont-brand__tag { display: block; font-size: .75rem; line-height: 1.3; color: #5b5d7a; }
+
+.pont-flashes { padding-top: 1rem; }
+.pont-stat small { display: block; color: #5b5d7a; font-size: .8125rem; }
+.pont-stat strong { display: block; font-size: 1.125rem; font-variant-numeric: tabular-nums; }
+.pont-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8125rem; }
+.pont-rows > li { padding-block: 1rem; }
+.pont-rows > li:first-child { padding-top: 0; }
+.pont-rows > li:last-child { padding-bottom: 0; border-bottom: 0; }
+
+.pont-public { background: #f4f4f9; padding-block: 2.5rem 3rem; }
+.pont-public__icon { font-size: 2.75rem; line-height: 1; }
+.pont-steps { list-style: none; padding: 0; margin: 1.25rem 0 1.5rem; display: grid; gap: .75rem; }
+.pont-steps li { display: flex; gap: .75rem; align-items: flex-start; }
+.pont-steps i { font-size: 1.25rem; line-height: 1.4; color: #000091; }
+.pont-footer { border-top: 1px solid #dcdcea; padding-block: 1.25rem; font-size: .8125rem; color: #5b5d7a; }
