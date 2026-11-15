@@ -1,16 +1,42 @@
-<h1>Comptes</h1>
-<p>
-  <%= link_to "Connecter un compte Pipedrive", new_admin_account_path %>
-  <% if Google::Oauth.configured? %> · <%= link_to "Connecter un agenda Google", admin_google_connect_path %><% end %>
-</p>
-<table>
-  <tr><th>Compte</th><th>État</th><th>Dernière lecture</th><th>Connexions</th></tr>
-  <% @accounts.each do |account| %>
-    <tr>
-      <td><%= link_to account.name, admin_account_path(account) %> <span class="muted"><%= account.provider %></span></td>
-      <td><%= render "admin/accounts/status", account: %></td>
-      <td><%= account.refreshed_at ? "il y a #{time_ago_in_words(account.refreshed_at)}" : "jamais" %></td>
-      <td><%= account.connections.size %></td>
-    </tr>
+<% cta = capture do %>
+  <%= link_to new_admin_account_path, class: "btn btn-primary btn-ico" do %>
+    <i class="ri-add-line" aria-hidden="true"></i><span>Connecter un compte Pipedrive</span>
   <% end %>
-</table>
+  <% if Google::Oauth.configured? %>
+    <%= link_to admin_google_connect_path, class: "btn btn-outline-primary btn-ico" do %>
+      <i class="ri-google-line" aria-hidden="true"></i><span>Connecter un agenda Google</span>
+    <% end %>
+  <% end %>
+<% end %>
+<%= render "admin/title", title: "Comptes", cta: %>
+
+<section class="s-section">
+  <div class="s-section__container container">
+    <div class="c-box">
+      <% if @accounts.empty? %>
+        <p class="mb-0 text-muted">Aucun compte pour l’instant.</p>
+      <% else %>
+        <ul class="list-group list-group-flush pont-rows">
+          <% @accounts.each do |account| %>
+            <li class="list-group-item px-0">
+              <div class="d-flex flex-column flex-md-row gap-2 justify-content-between align-items-md-center">
+                <div>
+                  <%= link_to account.name, admin_account_path(account), class: "fw-bold" %>
+                  <div class="fs-sm text-muted"><%= account_source(account) %></div>
+                  <% if account.failing? %><div class="fs-sm text-danger mt-1"><%= account.last_error %></div><% end %>
+                </div>
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                  <%= account_badge(account) %>
+                  <span class="fs-sm text-muted">
+                    <%= account.refreshed_at ? "lu il y a #{time_ago_in_words(account.refreshed_at)}" : "jamais lu" %> ·
+                    <%= count_label(account.connections.size, "connexion") %>
+                  </span>
+                </div>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </div>
+  </div>
+</section>

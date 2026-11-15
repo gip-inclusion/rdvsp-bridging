@@ -1,0 +1,23 @@
+<%# locals: (title:, back: nil, badge: nil, subtitle: nil, cta: nil) %>
+<section class="s-title-02">
+  <div class="s-title-02__container container">
+    <div class="s-title-02__row row">
+      <div class="s-title-02__col col-12">
+        <% if back %>
+          <div class="c-prevstep">
+            <%= link_to back.last, class: "btn btn-ico btn-link ps-0" do %>
+              <i class="ri-arrow-drop-left-line ri-xl fw-medium" aria-hidden="true"></i><span><%= back.first %></span>
+            <% end %>
+          </div>
+        <% end %>
+        <div class="c-title">
+          <div class="c-title__main">
+            <h1><%= title %> <%= badge %></h1>
+            <% if subtitle %><p class="fs-sm text-muted mb-0"><%= subtitle %></p><% end %>
+          </div>
+          <% if cta.present? %><div class="c-title__cta"><%= cta %></div><% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

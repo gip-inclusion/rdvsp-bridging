@@ -69,6 +69,6 @@ RSpec.describe "Admin: a connection's RDVs" do
 
     get("/admin/accounts/#{connection.account.id}", headers:)
 
-    expect(response.body).to include("<th>Ignorés</th>").and match(%r{<td>2</td>\s*</tr>})
+    expect(response.body).to include("2 ignorés")
   end
 end

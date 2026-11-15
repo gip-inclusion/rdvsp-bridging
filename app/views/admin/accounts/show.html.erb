@@ -1,44 +1,97 @@
-<h1><%= @account.name %></h1>
-<p><%= render "admin/accounts/status", account: @account %></p>
-<% if @account.provider == "pipedrive" %>
-  <p class="muted">
-    Pipedrive <code><%= @account.provider_company_domain %></code> ·
-    type d’activité <code><%= @account.rdv_activity_type_key || "meeting" %></code>
-    (<%= link_to "changer", edit_admin_account_rdv_activity_type_path(@account) %>) ·
-    webhook <%= @account.provider_webhook_id ? "actif" : "non configuré (passerelle non publique)" %>
-  </p>
-<% else %>
-  <p class="muted"><%= @account.provider.capitalize %></p>
-<% end %>
-
-<h2>Options</h2>
-<%= form_with model: @account, url: admin_account_path(@account) do |f| %>
-  <label><%= f.check_box :usager_details %> Transmettre les données de l’usager (titre, description, lieu) telles que RDV-SP les envoie</label>
-  <% if @account.provider == "pipedrive" %>
-    <label>
-      <%= f.check_box :link_persons %> Rattacher les rendez-vous à une Personne Pipedrive : celle de l’usager transféré
-      par le pont, sinon, avec l’option précédente seulement, celle qui porte son nom
-    </label>
+<% pipedrive = @account.provider == "pipedrive" %>
+<% cta = capture do %>
+  <% if pipedrive %>
+    <%= link_to new_admin_account_connection_path(@account), class: "btn btn-primary btn-ico" do %>
+      <i class="ri-user-add-line" aria-hidden="true"></i><span>Connecter un utilisateur Pipedrive</span>
+    <% end %>
   <% end %>
-  <label>E-mail d’alerte <%= f.email_field :alert_email, size: 40 %></label>
-  <%= f.submit "Enregistrer" %>
 <% end %>
+<% read = @account.refreshed_at ? "lu il y a #{time_ago_in_words(@account.refreshed_at)}" : "jamais lu" %>
+<%= render "admin/title", title: @account.name, back: ["Comptes", admin_root_path],
+                          badge: account_badge(@account, size: :base), subtitle: "#{account_source(@account)} · #{read}",
+                          cta: %>
 
-<h2>Connexions</h2>
-<% if @account.provider == "pipedrive" %>
-  <p><%= link_to "Connecter un utilisateur Pipedrive", new_admin_account_connection_path(@account) %></p>
-<% end %>
-<table>
-  <tr><th>Utilisateur / agenda</th><th>Agent RDV-SP</th><th>Dernier passage de RDV-SP</th><th>Occupations</th><th>Ignorés</th></tr>
-  <% @account.connections.each do |connection| %>
-    <tr>
-      <td><%= link_to connection.provider_user_name || connection.provider_user_id, admin_connection_path(connection) %></td>
-      <td><%= connection.agent_email %></td>
-      <td><%= connection.last_seen_at ? "il y a #{time_ago_in_words(connection.last_seen_at)}" : "jamais" %></td>
-      <td><%= connection.busy_blocks.live.count %></td>
-      <td><%= connection.rdvs.ignored.count %></td>
-    </tr>
-  <% end %>
-</table>
+<section class="s-section">
+  <div class="s-section__container container">
+    <% if @account.failing? %>
+      <div class="alert alert-danger" role="status"><p class="mb-0"><%= @account.last_error %></p></div>
+    <% end %>
+    <div class="s-section__row row">
+      <div class="s-section__col col-12 col-xl-8">
+        <div class="c-box mb-3 mb-md-4">
+          <h2 class="h3">Connexions</h2>
+          <% if @account.connections.empty? %>
+            <p class="mb-0 text-muted">Aucune connexion pour l’instant.</p>
+          <% else %>
+            <ul class="list-group list-group-flush pont-rows">
+              <% @account.connections.each do |connection| %>
+                <li class="list-group-item px-0">
+                  <div class="d-flex flex-column flex-md-row gap-2 justify-content-between">
+                    <div>
+                      <%= link_to connection.provider_user_name || connection.provider_user_id,
+                                  admin_connection_path(connection), class: "fw-bold" %>
+                      <div class="fs-sm text-muted">agent RDV-SP : <%= connection.agent_email || "?" %></div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 align-items-center fs-sm">
+                      <%= connection_badge(connection) %>
+                      <span class="text-muted">
+                        <%= connection.last_seen_at ? "passé il y a #{time_ago_in_words(connection.last_seen_at)}" : "jamais passé" %> ·
+                        <%= count_label(connection.busy_blocks.live.count, "occupation") %> ·
+                        <%= count_label(connection.rdvs.ignored.count, "ignoré") %>
+                      </span>
+                    </div>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+          <% end %>
+        </div>
+        <%= render "admin/accounts/rdvsp", account: @account if Rdvsp::Oauth.configured? %>
+      </div>
 
-<%= render "admin/accounts/rdvsp", account: @account if Rdvsp::Oauth.configured? %>
+      <div class="s-section__col col-12 col-xl-4">
+        <% if pipedrive %>
+          <div class="c-box mb-3 mb-md-4">
+            <h2 class="h3">Pipedrive</h2>
+            <ul class="list-data mb-0">
+              <li><small>Entreprise</small><strong><%= @account.provider_company_domain %>.pipedrive.com</strong></li>
+              <li>
+                <small>Type d’activité des RDV</small>
+                <strong><%= @account.rdv_activity_type_name || @account.rdv_activity_type_key || "meeting" %></strong>
+                <%= link_to "Changer", edit_admin_account_rdv_activity_type_path(@account), class: "btn-link fs-sm ms-2" %>
+              </li>
+              <li>
+                <small>Mises à jour en direct</small>
+                <strong><%= @account.provider_webhook_id ? "actives" : "non configurées (passerelle non publique)" %></strong>
+              </li>
+            </ul>
+          </div>
+        <% end %>
+        <div class="c-box mb-3 mb-md-4">
+          <h2 class="h3">Options</h2>
+          <%= form_with model: @account, url: admin_account_path(@account) do |f| %>
+            <div class="form-check form-switch mb-3">
+              <%= f.check_box :usager_details, class: "form-check-input", role: "switch" %>
+              <%= f.label :usager_details, "Transmettre les données de l’usager", class: "form-check-label" %>
+              <div class="form-text">Titre, description et lieu, tels que RDV-SP les envoie.</div>
+            </div>
+            <% if pipedrive %>
+              <div class="form-check form-switch mb-3">
+                <%= f.check_box :link_persons, class: "form-check-input", role: "switch" %>
+                <%= f.label :link_persons, "Rattacher les rendez-vous à une Personne Pipedrive",
+                            class: "form-check-label" %>
+                <div class="form-text">
+                  Celle de l’usager transféré par le pont, sinon, avec l’option précédente seulement, celle qui porte
+                  son nom.
+                </div>
+              </div>
+            <% end %>
+            <%= f.label :alert_email, "E-mail d’alerte", class: "form-label" %>
+            <%= f.email_field :alert_email, class: "form-control mb-3" %>
+            <%= f.submit "Enregistrer", class: "btn btn-primary btn-block" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
