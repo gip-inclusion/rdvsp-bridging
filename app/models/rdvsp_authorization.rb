@@ -50,6 +50,11 @@ class RdvspAuthorization < ApplicationRecord
     raise OtherAgent, email
   end
 
+  def withdraw!
+    revoke
+    destroy!
+  end
+
   # Best effort: RDV-SP forgets the token anyway when it is replaced, 30 days later
   def revoke(token = refresh_token)
     Rdvsp::Oauth.revoke(token) if token.present?
