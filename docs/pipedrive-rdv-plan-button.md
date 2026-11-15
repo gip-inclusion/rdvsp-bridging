@@ -56,7 +56,9 @@ An RDV plan belongs to the agent whose token created it (`planning_agent`), and 
   person in the session, and redirects to `/pipedrive/prendre-rdv/suite`, which goes on with step 2: the agent lands
   on the plan they asked for. Declining, or RDV-SP failing, says to click "Prendre RDV" again.
 - RDV-SP allows several tokens per agent and application (Doorkeeper's `revoke_previous_authorization_code_token` is
-  off), so an agent who also authorized the import keeps both.
+  off), but deletes a token 30 days after it was issued once the agent holds a newer one
+  (`CronJob::DestroyOldOauthObjects`): an agent who also authorized the import would lose whichever they leave idle.
+  `RefreshRdvspAuthorizationsJob` refreshes every night the tokens issued more than 20 days ago.
 - The usager transferred by a click is created in the clicking agent's name, in the account's organisation. The
   bridge first checks the agent is in it (`GET /api/v1/organisations`): for an agent outside it, RDV-SP would list
   the usagers of the agent's own organisations instead (`Agent::UserPolicy::Scope`), and a match there would record
