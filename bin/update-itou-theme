@@ -1,0 +1,26 @@
+#!/usr/bin/env sh
+# Replaces vendor/assets/itou-theme with the files Pont RDV uses from a release of gip-inclusion/itou-theme
+set -eu
+version=${1:?"usage: bin/update-itou-theme v3.6.3"}
+dest=vendor/assets/itou-theme
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
+curl -fsSL "https://github.com/gip-inclusion/itou-theme/archive/refs/tags/$version.zip" -o "$tmp/theme.zip"
+unzip -q "$tmp/theme.zip" -d "$tmp"
+dist=$(echo "$tmp"/itou-theme-*/dist)
+
+rm -rf "$dest"
+mkdir -p "$dest/stylesheets" "$dest/fonts/marianne" "$dest/fonts/coveredbyyourgrace" "$dest/fonts/remixicon" \
+  "$dest/images"
+cp "$dist/stylesheets/app.css" "$dest/stylesheets/"
+cp "$dist"/fonts/marianne/*.woff2 "$dist"/fonts/marianne/*.woff "$dest/fonts/marianne/"
+cp "$dist"/fonts/coveredbyyourgrace/*.woff2 "$dist"/fonts/coveredbyyourgrace/*.woff "$dest/fonts/coveredbyyourgrace/"
+cp "$dist/fonts/remixicon/remixicon.woff2" "$dist/fonts/remixicon/remixicon.woff" "$dest/fonts/remixicon/"
+# The images app.css references, and the logos of the public header
+images=$(grep -o 'url(\.\./images/[^)]*)' "$dist/stylesheets/app.css" | sed 's#url(\.\./images/##; s#)##' | sort -u)
+for image in $images logo-republique-francaise.svg logo-plateforme-inclusion.svg; do
+  cp "$dist/images/$image" "$dest/images/"
+done
+echo "$version" > "$dest/VERSION"
+echo "itou-theme $version in $dest"

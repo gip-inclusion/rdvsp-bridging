@@ -1,8 +1,25 @@
-<h1>Connecter un utilisateur de <%= @account.name %></h1>
-<%= form_with url: admin_account_connections_path(@account) do |f| %>
-  <label>Utilisateur Pipedrive
-    <%= f.select :provider_user_id, @users.map { [ "#{it['name']} (#{it['email']})", it["id"] ] } %>
-  </label>
-  <label>E-mail de l’agent dans RDV Service Public <%= f.email_field :agent_email, size: 40 %></label>
-  <%= f.submit "Créer les identifiants CalDAV" %>
-<% end %>
+<%= render "admin/title", title: "Connecter un utilisateur de #{@account.name}",
+                          back: [@account.name, admin_account_path(@account)] %>
+
+<section class="s-section">
+  <div class="s-section__container container">
+    <div class="s-section__row row">
+      <div class="s-section__col col-12 col-lg-8">
+        <div class="c-box">
+          <p>Pont RDV crée les identifiants CalDAV que l’agent saisira dans RDV Service Public.</p>
+          <%= form_with url: admin_account_connections_path(@account) do |f| %>
+            <%= f.label :provider_user_id, "Utilisateur Pipedrive", class: "form-label" %>
+            <%= f.select :provider_user_id, @users.map { ["#{it['name']} (#{it['email']})", it["id"]] }, {},
+                         class: "form-select mb-3" %>
+            <%= f.label :agent_email, "E-mail de l’agent dans RDV Service Public", class: "form-label" %>
+            <%= f.email_field :agent_email, class: "form-control mb-4" %>
+            <div class="d-flex flex-column flex-sm-row gap-2">
+              <%= f.submit "Créer les identifiants CalDAV", class: "btn btn-primary" %>
+              <%= link_to "Annuler", admin_account_path(@account), class: "btn btn-link" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

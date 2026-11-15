@@ -59,7 +59,8 @@ class PipedriveAppController < ApplicationController
     end
 
     Pipedrive::App.complete_installation(code: params[:code].to_s, redirect_uri: callback_url)
-    message("Pont RDV est installé", "Le bouton « Prendre RDV » apparaît sur la fiche des personnes dans Pipedrive.")
+    message("Pont RDV est installé", "Le bouton « Prendre RDV » apparaît sur la fiche des personnes dans Pipedrive.",
+            success: true)
   rescue Pipedrive::Error => e
     Rails.logger.warn("Pipedrive app installation failed: #{e.message}")
     message("Pipedrive n’a pas répondu comme prévu", "Recommencez l’installation.", :bad_gateway)

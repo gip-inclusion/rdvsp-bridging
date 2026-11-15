@@ -16,6 +16,7 @@ RSpec.describe "RDV-SP authorization by a partner's agent", :rdvsp do
 
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Association Exemple", "créer des usagers", "Continuer vers RDV Service Public")
+    expect(response.body).to include("logo-republique-francaise", "logo-plateforme-inclusion")
   end
 
   it "refuses an expired or tampered link" do

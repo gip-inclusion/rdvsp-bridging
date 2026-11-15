@@ -226,3 +226,8 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
     there; "RDV Service Public" stays the default. A partner may want the type of their own meetings ("RDV
     Individuel"), so activities of that type keep blocking time: the bridge recognises its own by id only
     (`Rdv#provider_object_id`), and drops any busy time Pipedrive announced for a new activity before its id was saved.
+41. **(you → me)** Pont RDV's pages wear the itou theme of the Plateforme de l'inclusion, vendored from a release tag in
+    `vendor/assets/itou-theme` (no Node, none of its JavaScript; `bin/update-itou-theme`). The public pages, seen by
+    partners, sit under the République française block, the Plateforme de l'inclusion logo and "Pont RDV"; the admin
+    keeps its own header. Lists replace tables so the admin reads on a phone. The RDV activity type is stored with its
+    name, to show it without asking Pipedrive (`docs/ui.md`).

@@ -96,12 +96,12 @@ RSpec.describe "Pipedrive app: the Prendre RDV button and the installation", :pi
       get "/pipedrive/app/callback", headers: browser, params: { code: "abc" }
 
       expect(exchange).to have_been_requested
-      expect(response.body).to include("Prendre RDV")
+      expect(response.body).to include("Prendre RDV", "ri-checkbox-circle-fill")
     end
 
     it "says so when the user refused, or Pipedrive failed" do
       get "/pipedrive/app/callback", headers: browser, params: { error: "user_denied" }
-      expect(response.body).to include("pas été installé")
+      expect(response.body).to include("pas été installé", "ri-error-warning-line")
 
       stub_request(:post, "https://oauth.pipedrive.com/oauth/token").to_return(status: 500)
       get "/pipedrive/app/callback", headers: browser, params: { code: "abc" }

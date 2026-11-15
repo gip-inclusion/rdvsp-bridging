@@ -1,13 +1,26 @@
-<h1>Organisation des usagers dans RDV-SP</h1>
-<p class="muted"><%= link_to @account.name, admin_account_path(@account) %></p>
-<p>
-  Le bouton « Prendre RDV » crée dans cette organisation les personnes qui ne sont pas encore dans RDV-SP. Chaque
-  import la remplace par la sienne.
-</p>
-<%= form_with url: admin_account_rdvsp_organisation_path(@account), method: :patch do |f| %>
-  <label>Organisation RDV-SP
-    <%= f.select :organisation_id, @organisations.map { [it["name"], it["id"]] },
-                 selected: @account.rdvsp_organisation_id %>
-  </label>
-  <%= f.submit "Enregistrer", name: nil %>
-<% end %>
+<%= render "admin/title", title: "Organisation des usagers dans RDV-SP",
+                          back: [@account.name, admin_account_path(@account)] %>
+
+<section class="s-section">
+  <div class="s-section__container container">
+    <div class="s-section__row row">
+      <div class="s-section__col col-12 col-lg-8">
+        <div class="c-box">
+          <p>
+            Le bouton « Prendre RDV » crée dans cette organisation les personnes qui ne sont pas encore dans RDV-SP.
+            Chaque import la remplace par la sienne.
+          </p>
+          <%= form_with url: admin_account_rdvsp_organisation_path(@account), method: :patch do |f| %>
+            <%= f.label :organisation_id, "Organisation RDV-SP", class: "form-label" %>
+            <%= f.select :organisation_id, @organisations.map { [it["name"], it["id"]] },
+                         { selected: @account.rdvsp_organisation_id }, class: "form-select mb-4" %>
+            <div class="d-flex flex-column flex-sm-row gap-2">
+              <%= f.submit "Enregistrer", name: nil, class: "btn btn-primary" %>
+              <%= link_to "Annuler", admin_account_path(@account), class: "btn btn-link" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

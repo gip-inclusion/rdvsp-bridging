@@ -1,14 +1,29 @@
-<h1>Type d’activité des RDV dans Pipedrive</h1>
-<p class="muted"><%= link_to @account.name, admin_account_path(@account) %></p>
-<p>
-  Les RDV pris dans RDV-SP arrivent dans Pipedrive comme des activités de ce type. Les activités déjà créées le
-  prennent à leur prochaine mise à jour. Le pont reconnaît les siennes à leur numéro : le type peut être un de ceux que
-  l’équipe utilise déjà, comme ses rendez-vous individuels.
-</p>
-<%= form_with url: admin_account_rdv_activity_type_path(@account), method: :patch do |f| %>
-  <label>Type existant
-    <%= f.select :key, @types.map { [it["name"], it["key_string"]] }, selected: @account.rdv_activity_type_key %>
-  </label>
-  <label>ou nouveau type, créé dans Pipedrive <%= f.text_field :name, size: 30 %></label>
-  <%= f.submit "Enregistrer", name: nil %>
-<% end %>
+<%= render "admin/title", title: "Type d’activité des RDV dans Pipedrive",
+                          back: [@account.name, admin_account_path(@account)] %>
+
+<section class="s-section">
+  <div class="s-section__container container">
+    <div class="s-section__row row">
+      <div class="s-section__col col-12 col-lg-8">
+        <div class="c-box">
+          <p>
+            Les RDV pris dans RDV-SP arrivent dans Pipedrive comme des activités de ce type. Les activités déjà créées
+            le prennent à leur prochaine mise à jour. Le pont reconnaît les siennes à leur numéro : le type peut être un
+            de ceux que l’équipe utilise déjà, comme ses rendez-vous individuels.
+          </p>
+          <%= form_with url: admin_account_rdv_activity_type_path(@account), method: :patch do |f| %>
+            <%= f.label :key, "Type existant", class: "form-label" %>
+            <%= f.select :key, @types.map { [it["name"], it["key_string"]] },
+                         { selected: @account.rdv_activity_type_key }, class: "form-select mb-3" %>
+            <%= f.label :name, "Ou nouveau type, créé dans Pipedrive", class: "form-label" %>
+            <%= f.text_field :name, class: "form-control mb-4" %>
+            <div class="d-flex flex-column flex-sm-row gap-2">
+              <%= f.submit "Enregistrer", name: nil, class: "btn btn-primary" %>
+              <%= link_to "Annuler", admin_account_path(@account), class: "btn btn-link" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

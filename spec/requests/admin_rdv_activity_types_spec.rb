@@ -21,7 +21,8 @@ RSpec.describe "Admin: the Pipedrive activity type of an account's RDVs" do
 
     patch path, params: { key: "rdv_individuel" }, headers: headers
     expect(response).to redirect_to("/admin/accounts/#{account.id}")
-    expect(account.reload.rdv_activity_type_key).to eq("rdv_individuel")
+    expect(account.reload)
+      .to have_attributes(rdv_activity_type_key: "rdv_individuel", rdv_activity_type_name: "RDV Individuel")
   end
 
   it "creates a new type in Pipedrive" do
@@ -31,7 +32,8 @@ RSpec.describe "Admin: the Pipedrive activity type of an account's RDVs" do
     patch path, params: { key: "rdv_service_public", name: " Rendez-vous " }, headers: headers
 
     expect(create_type).to have_been_requested
-    expect(account.reload.rdv_activity_type_key).to eq("rendez_vous")
+    expect(account.reload)
+      .to have_attributes(rdv_activity_type_key: "rendez_vous", rdv_activity_type_name: "Rendez-vous")
   end
 
   it "says when Pipedrive fails" do

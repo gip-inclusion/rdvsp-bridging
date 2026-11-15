@@ -21,11 +21,6 @@ module ApplicationHelper
     "incomplete_name" => ["sans prénom ou nom", "sans prénom ou nom"],
   }.freeze
 
-  def usager_import_state(usager_import)
-    state = USAGER_IMPORT_STATES.fetch(usager_import.state)
-    usager_import.error ? "#{state} : #{usager_import.error}" : state
-  end
-
   # "12 créés, 1 refusé (birth_date : 1)": counts and attribute names only
   def usager_import_summary(usager_import)
     parts = USAGER_IMPORT_COUNTS.filter_map do |key, (singular, plural)|

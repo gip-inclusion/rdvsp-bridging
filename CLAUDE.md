@@ -58,6 +58,8 @@ Exact requests, verified by reading the gem and RDV-SP code (`production` branch
   used to import the partner's beneficiaries as usagers (`UsagerImports::`, `docs/rdvsp-usager-import.md`) and to open
   RDV plans from the "Prendre RDV" button of the bridge's Pipedrive app (`RdvPlans::Start`, `PipedriveAppController`,
   `docs/pipedrive-rdv-plan-button.md`).
+- Pages: the itou theme, vendored in `vendor/assets/itou-theme` (`bin/update-itou-theme VERSION`), with
+  `app/assets/stylesheets/pont-rdv.css` and `AdminHelper` on top (`docs/ui.md`).
 - `Providers` dispatches by convention to `<Provider>::RefreshAccount`, `RebuildConnection`, `PushRdv`;
   `RdvContent` holds the provider-agnostic rules about what an RDV may reveal.
 

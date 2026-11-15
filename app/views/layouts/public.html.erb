@@ -4,13 +4,26 @@
     <title>Pont RDV</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
-    <style>
-      body { font-family: system-ui, sans-serif; max-width: 640px; margin: 3rem auto; padding: 0 1rem; color: #161616; line-height: 1.5; }
-      button { font: inherit; padding: .6rem 1.2rem; background: #000091; color: #fff; border: 0; cursor: pointer; }
-      .muted { color: #666; }
-    </style>
+    <%= stylesheet_link_tag "stylesheets/app", "pont-rdv" %>
   </head>
   <body>
-    <%= yield %>
+    <header class="pont-header" role="banner">
+      <div class="container pont-header__row">
+        <%= image_tag "images/logo-republique-francaise.svg", alt: "République française", class: "pont-header__rf" %>
+        <%= image_tag "images/logo-plateforme-inclusion.svg", alt: "Plateforme de l’inclusion",
+                      class: "pont-header__platform" %>
+        <span class="pont-header__service">Pont RDV</span>
+      </div>
+    </header>
+    <main class="pont-public" role="main">
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-12 col-md-10 col-lg-7">
+            <div class="c-box p-4 p-md-5"><%= yield %></div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <footer class="pont-footer"><div class="container">Pont RDV · Plateforme de l’inclusion</div></footer>
   </body>
 </html>

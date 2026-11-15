@@ -1,47 +1,66 @@
-<h2>RDV Service Public</h2>
 <% authorization = account.rdvsp_authorization %>
-<% if authorization %>
-  <p>
-    Autorisée par l’agent <%= authorization.agent_email || "n° #{authorization.agent_id}" %>
-    le <%= paris_time(authorization.created_at) %>.
+<div class="c-box mb-3 mb-md-4">
+  <h2 class="h3">RDV Service Public</h2>
+  <% if authorization %>
     <% if authorization.lost? %>
-      <span class="ko">Perdue le <%= paris_time(authorization.lost_at) %> : envoyez un nouveau lien.</span>
+      <div class="alert alert-danger" role="status">
+        <p class="mb-0">Perdue le <%= paris_time(authorization.lost_at) %> : envoyez un nouveau lien.</p>
+      </div>
     <% end %>
-  </p>
-  <p>
-    Organisation où « Prendre RDV » crée les usagers :
-    <% if account.rdvsp_organisation_id %>
-      n° <%= account.rdvsp_organisation_id %>.
-    <% else %>
-      pas encore choisie. À défaut, celle de l’agent s’il n’en a qu’une.
-    <% end %>
-    <% unless authorization.lost? %>
-      <%= link_to "Choisir l’organisation", edit_admin_account_rdvsp_organisation_path(account) %>
-    <% end %>
-  </p>
-  <%= button_to "Retirer l’autorisation", admin_account_rdvsp_authorization_path(account), method: :delete,
-                form: { class: "inline", onsubmit: "return confirm('Retirer l’autorisation RDV-SP ?')" } %>
-  <% unless authorization.lost? %>
-    <%= link_to "Importer des bénéficiaires", new_admin_account_usager_import_path(account) %>
+    <ul class="list-data mb-3">
+      <li>
+        <small>Autorisée par l’agent</small>
+        <strong><%= authorization.agent_email || "n° #{authorization.agent_id}" %>, le <%= paris_time(authorization.created_at) %></strong>
+      </li>
+      <li>
+        <small>Organisation où « Prendre RDV » crée les usagers</small>
+        <% if account.rdvsp_organisation_id %>
+          <strong>n° <%= account.rdvsp_organisation_id %></strong>
+        <% else %>
+          <strong>pas encore choisie</strong>
+          <span class="fs-sm text-muted">À défaut, celle de l’agent s’il n’en a qu’une.</span>
+        <% end %>
+        <% unless authorization.lost? %>
+          <%= link_to "Changer", edit_admin_account_rdvsp_organisation_path(account), class: "btn-link fs-sm ms-2" %>
+        <% end %>
+      </li>
+    </ul>
+    <div class="d-flex flex-column flex-sm-row gap-2 mb-4">
+      <% unless authorization.lost? %>
+        <%= link_to new_admin_account_usager_import_path(account), class: "btn btn-primary btn-sm btn-ico" do %>
+          <i class="ri-upload-2-line" aria-hidden="true"></i><span>Importer des bénéficiaires</span>
+        <% end %>
+      <% end %>
+      <%= button_to admin_account_rdvsp_authorization_path(account), method: :delete,
+                    class: "btn btn-outline-danger btn-sm btn-ico",
+                    form: { onsubmit: "return confirm('Retirer l’autorisation RDV-SP ?')" } do %>
+        <i class="ri-delete-bin-line" aria-hidden="true"></i><span>Retirer l’autorisation</span>
+      <% end %>
+    </div>
+  <% else %>
+    <p>Aucun agent n’a encore autorisé la passerelle à utiliser l’API de RDV-SP.</p>
   <% end %>
-<% else %>
-  <p>Aucun agent n’a encore autorisé la passerelle à utiliser l’API de RDV-SP.</p>
-<% end %>
-<p>
-  Lien d’autorisation à envoyer à un agent RDV-SP du partenaire (valable 7 jours) :<br>
-  <code><%= Rails.configuration.x.base_url %><%= rdvsp_authorization_link_path(RdvspAuthorization.link_token(account)) %></code>
-</p>
 
-<% if account.usager_imports.any? %>
-  <table>
-    <tr><th>Lancé le</th><th>Organisation</th><th>État</th><th>Bilan</th></tr>
-    <% account.usager_imports.order(created_at: :desc).each do |usager_import| %>
-      <tr>
-        <td><%= paris_time(usager_import.created_at) %></td>
-        <td><%= usager_import.rdvsp_organisation_id %></td>
-        <td><%= usager_import_state(usager_import) %></td>
-        <td><%= usager_import_summary(usager_import) %></td>
-      </tr>
-    <% end %>
-  </table>
-<% end %>
+  <label class="form-label" for="rdvsp-authorization-link">
+    Lien d’autorisation à envoyer à un agent RDV-SP du partenaire <span class="text-muted">(valable 7 jours)</span>
+  </label>
+  <%= copy_field "rdvsp-authorization-link",
+                 "#{Rails.configuration.x.base_url}#{rdvsp_authorization_link_path(RdvspAuthorization.link_token(account))}" %>
+
+  <% if account.usager_imports.any? %>
+    <h3 class="h5 mt-4">Imports de bénéficiaires</h3>
+    <ul class="list-group list-group-flush pont-rows">
+      <% account.usager_imports.order(created_at: :desc).each do |usager_import| %>
+        <li class="list-group-item px-0 d-flex flex-column flex-sm-row gap-2 justify-content-between">
+          <div>
+            <strong><%= paris_time(usager_import.created_at) %></strong>
+            <span class="fs-sm text-muted">· organisation n° <%= usager_import.rdvsp_organisation_id %></span>
+            <div class="fs-sm text-muted"><%= usager_import_summary(usager_import) %></div>
+            <% if usager_import.error %><div class="fs-sm text-danger"><%= usager_import.error %></div><% end %>
+          </div>
+          <div><%= usager_import_badge(usager_import) %></div>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</div>

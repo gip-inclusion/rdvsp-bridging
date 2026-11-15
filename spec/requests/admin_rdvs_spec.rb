@@ -15,7 +15,7 @@ RSpec.describe "Admin: a connection's RDVs" do
 
     get("/admin/connections/#{connection.id}", headers:)
 
-    expect(response.body).to include("transmis : 1", "ignorés : 1", "1182824", "1259524", "10/11/2026 16:15:10")
+    expect(response.body).to include("1 transmis", "1 ignoré", "1182824", "1259524", "10/11/2026 16:15:10")
     expect(response.body).not_to include("Jeanne Dupont")
   end
 
@@ -62,13 +62,5 @@ RSpec.describe "Admin: a connection's RDVs" do
       expect(response).to have_http_status(:bad_request)
       expect(connection.rdvs.ignored).to be_empty
     end
-  end
-
-  it "counts each connection's ignored RDVs on the account page" do
-    create_list(:rdv, 2, connection:, ignored_at: Time.current, payload: nil)
-
-    get("/admin/accounts/#{connection.account.id}", headers:)
-
-    expect(response.body).to include("<th>Ignorés</th>").and match(%r{<td>2</td>\s*</tr>})
   end
 end

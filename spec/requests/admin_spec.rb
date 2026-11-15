@@ -14,13 +14,32 @@ RSpec.describe "Admin" do
     Admin::BaseController::RATE_LIMIT_STORE.clear
   end
 
+  it "dresses the pages in the itou theme" do
+    auth = ActionController::HttpAuthentication::Basic.encode_credentials("admin", "admin")
+
+    get "/admin", headers: { "Authorization" => auth, "User-Agent" => browser }
+
+    expect(response.body).to match(%r{/assets/stylesheets/app-\w+\.css}).and match(%r{/assets/pont-rdv-\w+\.css})
+  end
+
+  it "says when Pipedrive refuses the account's token instead of failing" do
+    account = create(:account)
+    stub_request(:get, "#{PipedriveHelpers::API}/v1/users").to_return(status: 401)
+    auth = ActionController::HttpAuthentication::Basic.encode_credentials("admin", "admin")
+
+    get "/admin/accounts/#{account.id}/connections/new", headers: { "Authorization" => auth, "User-Agent" => browser }
+
+    expect(response).to redirect_to("/admin/accounts/#{account.id}")
+    expect(flash[:alert]).to include("Pipedrive")
+  end
+
   it "speaks French, durations included" do
     connection = create(:connection, last_seen_at: 5.minutes.ago)
     auth = ActionController::HttpAuthentication::Basic.encode_credentials("admin", "admin")
 
     get "/admin/connections/#{connection.id}", headers: { "Authorization" => auth, "User-Agent" => browser }
 
-    expect(response.body).to include("Dernier passage de RDV-SP : il y a 5 minutes")
+    expect(response.body).to include("Dernier passage de RDV-SP", "il y a 5 minutes")
   end
 
   it "builds the CalDAV URL from the configured base URL, not from the request's host" do

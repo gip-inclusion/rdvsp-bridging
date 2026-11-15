@@ -8,6 +8,8 @@ class Admin::ConnectionsController < Admin::BaseController
   def new
     @account = Account.find(params.expect(:account_id))
     @users = Pipedrive::Client.new(@account.api_token).users.select { it["active_flag"] }
+  rescue Pipedrive::Error => e
+    redirect_to admin_account_path(@account), alert: "Utilisateurs Pipedrive indisponibles : #{e.message}"
   end
 
   def create

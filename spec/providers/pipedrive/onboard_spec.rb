@@ -29,6 +29,7 @@ RSpec.describe Pipedrive::Onboard do
                  http_auth_password: account.webhook_token, }
     expect(WebMock).to have_requested(:post, "#{api}/v1/webhooks").with(body: expected)
     expect(account.provider_webhook_id).to eq("4")
+    expect(account).to have_attributes(rdv_activity_type_key: "rdv_sp", rdv_activity_type_name: "RDV Service Public")
   end
 
   it "replaces this bridge's previous webhooks, keeping other bridges' ones" do
