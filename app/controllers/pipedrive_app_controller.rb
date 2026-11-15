@@ -51,7 +51,7 @@ class PipedriveAppController < ApplicationController
   # The button of the authorization page: on to RDV-SP, which brings the agent back to the callback, then to #resume
   def authorize
     account_id, provider_user_id, person_id = request_verifier.verified(params[:request].to_s)
-    unless person_id
+    unless provider_user_id.present? && person_id
       return message("Cette demande a expiré", "Cliquez à nouveau sur « Prendre RDV » dans Pipedrive.", :not_found)
     end
 
