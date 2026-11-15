@@ -39,7 +39,10 @@ RSpec.describe RdvPlans::Start, :rdvsp do
   end
 
   context "when the person isn't transferred yet" do
-    before { account.update!(rdvsp_organisation_id: 42) }
+    before do
+      account.update!(rdvsp_organisation_id: 42)
+      stub_rdvsp_organisations([{ id: 41, name: "Antenne Lyon" }, { id: 42, name: "Antenne Paris" }])
+    end
 
     it "uses the usager of the account's organisation with the same e-mail, and records it" do
       stub_person(email: [{ value: "ada@example.fr", primary: true }])
@@ -84,12 +87,14 @@ RSpec.describe RdvPlans::Start, :rdvsp do
       expect(start.reason).to eq(:rejected)
     end
 
-    it "stops when RDV-SP refuses the agent the organisation" do
-      stub_person
-      stub_request(:get, "#{rdvsp_url}/api/v1/organisations/42/users").with(query: hash_including({}))
-        .to_return_json(status: 403, body: { errors: [{ base: "forbidden" }] })
+    # RDV-SP then lists the usagers of the agent's own organisations instead, and refuses to create one
+    it "stops when the agent isn't in the account's organisation, recording nothing" do
+      stub_rdvsp_organisations([{ id: 41, name: "Antenne Lyon" }])
+      stub_person(email: [{ value: "ada@example.fr", primary: true }])
+      stub_rdvsp_organisation_users(42, [usager(98, "Ada", "Lovelace", email: "ada@example.fr")])
 
       expect(result.reason).to eq(:forbidden)
+      expect(account.imported_usagers).to be_empty
     end
 
     it "stops when Pipedrive doesn't know the person" do

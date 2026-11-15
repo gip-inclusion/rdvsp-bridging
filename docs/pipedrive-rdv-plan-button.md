@@ -30,7 +30,7 @@ and `token`, a JWT (HS256) carrying `userId` and `companyId`. The bridge trusts 
 2. The person's RDV-SP usager, with that agent's token:
    - already transferred (`ImportedUsager`): its id;
    - otherwise, transferred now, with the import's rules, into the account's organisation
-     (`accounts.rdvsp_organisation_id`: chosen in the admin, replaced by each import; without one, the authorizing
+     (`accounts.rdvsp_organisation_id`: chosen in the admin, replaced by each import; without one, the clicking
      agent's only organisation, then kept): read the person from Pipedrive (v1), load the organisation's usagers; one
      with the same e-mail or phone is used and recorded; a same-name usager without either is not (it may be someone
      else, whom RDV-SP would notify): the page says to book in RDV-SP directly; no match → `POST /api/v1/users` as the
@@ -57,8 +57,10 @@ An RDV plan belongs to the agent whose token created it (`planning_agent`), and 
   on the plan they asked for. Declining, or RDV-SP failing, says to click "Prendre RDV" again.
 - RDV-SP allows several tokens per agent and application (Doorkeeper's `revoke_previous_authorization_code_token` is
   off), so an agent who also authorized the import keeps both.
-- The usager transferred by a click is created in the clicking agent's name, in the account's organisation; RDV-SP
-  refuses it (403) when the agent isn't in that organisation, and the page says to ask to be added.
+- The usager transferred by a click is created in the clicking agent's name, in the account's organisation. The
+  bridge first checks the agent is in it (`GET /api/v1/organisations`): for an agent outside it, RDV-SP would list
+  the usagers of the agent's own organisations instead (`Agent::UserPolicy::Scope`), and a match there would record
+  the wrong usager for the whole account. The page then says to ask to be added.
 - The account's admin page lists the agents' authorizations (RDV-SP e-mail, Pipedrive user, date, lost), each with
   "Retirer", which revokes the token at RDV-SP.
 
@@ -71,7 +73,7 @@ An RDV plan belongs to the agent whose token created it (`planning_agent`), and 
 ## Errors
 
 Each case renders a page saying what to do: missing or invalid token (401), unknown company, no or lost RDV-SP
-authorization of the agent (the authorization page), agent outside the organisation (403), no organisation (none
+authorization of the agent (the authorization page), agent outside the organisation, no organisation (none
 chosen and the agent has several), first or last name missing in Pipedrive, homonym, RDV-SP rejecting the usager,
 RDV-SP or Pipedrive failing (502). Logs carry ids only.
 

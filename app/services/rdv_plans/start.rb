@@ -48,13 +48,17 @@ module RdvPlans
       stop(:rejected)
     end
 
-    # Chosen in the admin or by the last import; otherwise the agent's only one, kept for the next clicks
+    # Chosen in the admin or by the last import, if the agent is in it: otherwise RDV-SP would match the person
+    # against the usagers of the agent's own organisations. Without one, the agent's only organisation, then kept.
     def rdvsp_organisation_id
-      return @account.rdvsp_organisation_id if @account.rdvsp_organisation_id
+      organisation_ids = client.organisations.map { it.fetch("id") }
+      if @account.rdvsp_organisation_id
+        stop(:forbidden) unless organisation_ids.include?(@account.rdvsp_organisation_id)
+        return @account.rdvsp_organisation_id
+      end
 
-      organisations = client.organisations
-      stop(:no_organisation) unless organisations.one?
-      @account.update!(rdvsp_organisation_id: organisations.sole.fetch("id"))
+      stop(:no_organisation) unless organisation_ids.one?
+      @account.update!(rdvsp_organisation_id: organisation_ids.sole)
       @account.rdvsp_organisation_id
     end
 
