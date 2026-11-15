@@ -1,31 +1,61 @@
-# An RDV-SP agent's OAuth authorization for an account: the bridge calls RDV-SP's API as that agent
+# An RDV-SP agent's OAuth authorization for an account: the bridge calls RDV-SP's API as that agent. The account's own
+# (no provider_user_id) serves the import; each Pipedrive user's serves their clicks on "Prendre RDV".
 class RdvspAuthorization < ApplicationRecord
   belongs_to :account
 
   encrypts :access_token
   encrypts :refresh_token
 
-  validates :account_id, uniqueness: true
+  validates :provider_user_id, uniqueness: { scope: :account_id }
   validates :agent_id, :access_token, :refresh_token, :expires_at, presence: true
 
   LINK_VALIDITY = 7.days
+
+  # RDV-SP brought back another agent than the one of the Pipedrive user's connection
+  class OtherAgent < StandardError
+    attr_reader :agent_email
+
+    def initialize(agent_email)
+      @agent_email = agent_email
+      super("RDV-SP authorized another agent than the connection's")
+    end
+  end
 
   def self.link_token(account) = account.signed_id(purpose: :rdvsp_authorization, expires_in: LINK_VALIDITY)
 
   def self.account_for(token) = Account.find_signed(token, purpose: :rdvsp_authorization)
 
-  # Exchanges the code an agent brought back from RDV-SP, replacing the account's earlier authorization
-  def self.authorize!(account:, code:, redirect_uri:)
-    authorization = account.rdvsp_authorization || account.build_rdvsp_authorization
+  # Exchanges the code an agent brought back from RDV-SP, replacing the earlier authorization of the account, or of
+  # that Pipedrive user
+  def self.authorize!(account:, code:, redirect_uri:, provider_user_id: nil)
+    authorization = find_or_initialize_by(account:, provider_user_id:)
     previous_refresh_token = authorization.refresh_token
     authorization.assign_attributes(**Rdvsp::Oauth.exchange_code(code:, redirect_uri:), lost_at: nil)
     agent = Rdvsp::Client.new(authorization).me
+    authorization.ensure_connection_agent!(agent["email"])
     authorization.update!(agent_id: agent.fetch("id"), agent_email: agent["email"])
     authorization.revoke(previous_refresh_token)
     authorization
   end
 
   def lost? = lost_at.present?
+
+  # On a shared computer, RDV-SP may log someone else in silently: a Pipedrive user's authorization must come from the
+  # agent of their connection, when there is one. The new token is revoked otherwise.
+  def ensure_connection_agent!(email)
+    expected = provider_user_id && account.connections.find_by(provider_user_id:)&.agent_email
+    return if expected.blank? || email.to_s.strip.casecmp?(expected.strip)
+
+    Rails.logger.warn("RDV-SP authorized another agent than the connection's, for Pipedrive user #{provider_user_id} " \
+                      "of account #{account_id}")
+    revoke
+    raise OtherAgent, email
+  end
+
+  def withdraw!
+    revoke
+    destroy!
+  end
 
   # Best effort: RDV-SP forgets the token anyway when it is replaced, 30 days later
   def revoke(token = refresh_token)

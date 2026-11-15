@@ -54,10 +54,10 @@ Exact requests, verified by reading the gem and RDV-SP code (`production` branch
 - `app/caldav/`: provider-agnostic CalDAV server (XML parsing/rendering, ICS in/out).
 - `app/providers/pipedrive/`: API client, activity → busy block mapping, RDV → activity writer, webhooks.
 - `app/providers/google/`: spike, Calendar REST API + OAuth (`docs/google.md`).
-- `app/clients/rdvsp/`: RDV-SP's own API, with an OAuth token an agent of the partner granted (`RdvspAuthorization`),
-  used to import the partner's beneficiaries as usagers (`UsagerImports::`, `docs/rdvsp-usager-import.md`) and to open
-  RDV plans from the "Prendre RDV" button of the bridge's Pipedrive app (`RdvPlans::Start`, `PipedriveAppController`,
-  `docs/pipedrive-rdv-plan-button.md`).
+- `app/clients/rdvsp/`: RDV-SP's own API, with OAuth tokens agents of the partner granted (`RdvspAuthorization`): the
+  account's, to import the partner's beneficiaries as usagers (`UsagerImports::`, `docs/rdvsp-usager-import.md`), and
+  each agent's own, given at their first click, to open RDV plans from the "Prendre RDV" button of the bridge's
+  Pipedrive app (`RdvPlans::Start`, `PipedriveAppController`, `docs/pipedrive-rdv-plan-button.md`).
 - Pages: the itou theme, vendored in `vendor/assets/itou-theme` (`bin/update-itou-theme VERSION`), with
   `app/assets/stylesheets/pont-rdv.css` and `AdminHelper` on top (`docs/ui.md`).
 - `Providers` dispatches by convention to `<Provider>::RefreshAccount`, `RebuildConnection`, `PushRdv`;

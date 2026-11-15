@@ -1,0 +1,31 @@
+<p class="fs-sm text-muted mb-1"><%= @account.name %> · Prendre RDV</p>
+<h1 class="h2">Autoriser Pont RDV</h1>
+<% if @lost %>
+  <div class="alert alert-warning" role="status">
+    <p class="mb-0">Votre autorisation précédente ne fonctionne plus : donnez-la à nouveau.</p>
+  </div>
+<% end %>
+<p>
+  Pour vous emmener au rendez-vous de cette personne, Pont RDV le prépare dans RDV Service Public en votre nom.
+  Il vous le demande une seule fois.
+</p>
+<ul class="pont-steps">
+  <li>
+    <i class="ri-shield-check-line" aria-hidden="true"></i>
+    <span>Vous allez vous connecter à RDV Service Public, qui vous demandera de confirmer.</span>
+  </li>
+  <li>
+    <i class="ri-user-add-line" aria-hidden="true"></i>
+    <span>
+      Pont RDV agira avec vos droits d’agent, et créera la personne dans RDV Service Public si elle n’y est pas.
+    </span>
+  </li>
+  <li>
+    <i class="ri-calendar-check-line" aria-hidden="true"></i>
+    <span>Vous arriverez ensuite directement sur le rendez-vous à prendre.</span>
+  </li>
+</ul>
+<%= button_to pipedrive_authorize_path, params: { request: @authorization_request },
+              class: "btn btn-primary btn-lg btn-block btn-ico justify-content-center" do %>
+  <span>Continuer vers RDV Service Public</span><i class="ri-arrow-right-line" aria-hidden="true"></i>
+<% end %>

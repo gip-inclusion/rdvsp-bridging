@@ -12,12 +12,53 @@ RSpec.describe RdvspAuthorization, :rdvsp do
     expect(build(:rdvsp_authorization, account:)).not_to be_valid
   end
 
+  it "keeps the account's authorization apart from its agents' ones, one per Pipedrive user" do
+    import = create(:rdvsp_authorization, account:)
+    agent = create(:rdvsp_authorization, account:, provider_user_id: "501")
+
+    expect(account.reload.rdvsp_authorization).to eq(import)
+    expect(account.rdvsp_agent_authorizations).to contain_exactly(agent)
+    expect(build(:rdvsp_authorization, account:, provider_user_id: "501")).not_to be_valid
+    expect(build(:rdvsp_authorization, account:, provider_user_id: "502")).to be_valid
+  end
+
+  it "stores an agent's authorization without touching the account's one" do
+    import = create(:rdvsp_authorization, account:, agent_id: 77)
+    stub_rdvsp_token(access_token: "agent-access")
+    stub_rdvsp_me(id: 78, email: "lea@example.fr").with(headers: { "Authorization" => "Bearer agent-access" })
+
+    described_class.authorize!(account:, provider_user_id: "501", code: "abc", redirect_uri: "https://bridge/cb")
+
+    expect(account.reload.rdvsp_authorization).to eq(import)
+    expect(account.rdvsp_agent_authorizations.sole)
+      .to have_attributes(provider_user_id: "501", agent_id: 78, agent_email: "lea@example.fr")
+  end
+
+  it "keeps an agent's tokens when RDV-SP brings back another agent than the one of their connection" do
+    create(:connection, account:, provider_user_id: "501", agent_email: " Lea@example.fr ")
+    lea = create(:rdvsp_authorization, account:, provider_user_id: "501", agent_id: 78, access_token: "lea-access")
+    stub_rdvsp_token(access_token: "paul-access", refresh_token: "paul-refresh")
+    stub_rdvsp_me(id: 79, email: "paul@example.fr")
+    stub_request(:post, "#{rdvsp_url}/oauth/revoke")
+
+    expect { described_class.authorize!(account:, provider_user_id: "501", code: "abc", redirect_uri: "https://x/cb") }
+      .to raise_error(described_class::OtherAgent)
+    expect(WebMock).to have_requested(:post, "#{rdvsp_url}/oauth/revoke")
+      .with(body: hash_including(token: "paul-refresh"))
+    expect(lea.reload).to have_attributes(agent_id: 78, access_token: "lea-access")
+
+    stub_rdvsp_me(id: 78, email: "lea@example.fr")
+    described_class.authorize!(account:, provider_user_id: "501", code: "abc", redirect_uri: "https://x/cb")
+    expect(lea.reload.access_token).to eq("paul-access")
+  end
+
   it "goes away with its account, as do the account's imports" do
     create(:rdvsp_authorization, account:)
+    create(:rdvsp_authorization, account:, provider_user_id: "501")
     usager_import = create(:usager_import, account:)
     create(:imported_usager, account:, usager_import:)
 
-    expect { account.destroy! }.to change(described_class, :count).by(-1)
+    expect { account.destroy! }.to change(described_class, :count).by(-2)
       .and change(UsagerImport, :count).by(-1).and change(ImportedUsager, :count).by(-1)
   end
 

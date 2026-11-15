@@ -61,11 +61,29 @@ RSpec.describe "Admin: RDV-SP usager import", :rdvsp do
 
   it "withdraws the authorization, revoking its token at RDV-SP" do
     create(:rdvsp_authorization, account:, refresh_token: "refresh")
+    create(:rdvsp_authorization, account:, provider_user_id: "501")
     revoke = stub_request(:post, "#{rdvsp_url}/oauth/revoke").with(body: hash_including(token: "refresh"))
 
     delete "/admin/accounts/#{account.id}/rdvsp_authorization", headers: headers
 
     expect(revoke).to have_been_requested
     expect(account.reload.rdvsp_authorization).to be_nil
+    expect(account.rdvsp_agent_authorizations).to be_present
+  end
+
+  it "lists the agents who authorized the Prendre RDV button, and withdraws one" do
+    create(:connection, account:, provider_user_id: "501", provider_user_name: "Léa Martin")
+    lea = create(:rdvsp_authorization, account:, provider_user_id: "501", agent_email: "lea@example.fr",
+                                       refresh_token: "lea-refresh")
+    create(:rdvsp_authorization, account:, provider_user_id: "502", agent_email: "max@example.fr", lost_at: 1.day.ago)
+
+    get "/admin/accounts/#{account.id}", headers: headers
+    expect(response.body).to include("Léa Martin", "lea@example.fr", "max@example.fr", "Perdue")
+
+    revoke = stub_request(:post, "#{rdvsp_url}/oauth/revoke").with(body: hash_including(token: "lea-refresh"))
+    delete "/admin/accounts/#{account.id}/rdvsp_agent_authorizations/#{lea.id}", headers: headers
+
+    expect(revoke).to have_been_requested
+    expect(account.rdvsp_agent_authorizations.pluck(:agent_email)).to eq(["max@example.fr"])
   end
 end

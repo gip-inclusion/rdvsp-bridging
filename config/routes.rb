@@ -23,6 +23,8 @@ Rails.application.routes.draw do
 
   scope "pipedrive", controller: :pipedrive_app do
     get "prendre-rdv", action: :rdv_plan, as: :pipedrive_rdv_plan
+    post "autoriser", action: :authorize, as: :pipedrive_authorize
+    get "prendre-rdv/suite", action: :resume, as: :pipedrive_rdv_plan_resume
     get "retour/:token", action: :back, as: :pipedrive_back, constraints: { token: %r{[^/]+} }
     get "app/callback", action: :callback, as: :pipedrive_app_callback
   end
@@ -34,6 +36,7 @@ Rails.application.routes.draw do
     resources :accounts, only: %i[index show new create update] do
       resources :connections, only: %i[new create]
       resource :rdvsp_authorization, only: :destroy
+      resources :rdvsp_agent_authorizations, only: :destroy
       resource :rdvsp_organisation, only: %i[edit update]
       resource :rdv_activity_type, only: %i[edit update]
       resources :usager_imports, only: %i[new create]

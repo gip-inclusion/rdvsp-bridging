@@ -1,6 +1,8 @@
-# A partner's agent authorizes the bridge to call RDV-SP's API in their name, from a link staff sent them
+# An agent authorizes the bridge to call RDV-SP's API in their name: for the account, from a link staff sent them, or
+# for themselves, from the "Prendre RDV" button (PipedriveAppController)
 class RdvspAuthorizationsController < ApplicationController
   include PublicMessages
+  include RdvspOauth
 
   layout "public"
 
@@ -9,28 +11,28 @@ class RdvspAuthorizationsController < ApplicationController
 
   def show; end
 
-  def create
-    state = SecureRandom.urlsafe_base64(24)
-    session[:rdvsp_oauth] = { "state" => state, "account_id" => @account.id }
-    redirect_to Rdvsp::Oauth.authorize_url(redirect_uri:, state:), allow_other_host: true
-  end
+  def create = start_rdvsp_oauth("flow" => "account", "account_id" => @account.id)
 
   def callback
-    pending = session.delete(:rdvsp_oauth) || {}
-    unless expected_state?(pending["state"])
-      return message("Cette demande a expiré", "Rouvrez le lien qui vous a été envoyé pour recommencer.", :bad_request)
+    @pending = session.delete(:rdvsp_oauth) || {}
+    unless expected_state?(@pending["state"])
+      return message("Cette demande a expiré", "#{start_over.upcase_first} pour recommencer.", :bad_request)
     end
     if params[:error].present?
-      return message("Vous n’avez pas autorisé Pont RDV",
-                     "Rien n’a été modifié. Rouvrez le lien qui vous a été envoyé si vous changez d’avis.")
+      return message("Vous n’avez pas autorisé Pont RDV", "Rien n’a été modifié. #{start_over.upcase_first} si vous " \
+                                                          "changez d’avis.")
     end
 
-    RdvspAuthorization.authorize!(account: Account.find(pending["account_id"]), code: params[:code].to_s, redirect_uri:)
-    message("C’est fait", "Pont RDV peut maintenant créer des usagers dans RDV Service Public en votre nom. " \
-                          "Vous pouvez fermer cette page.", success: true)
+    authorize
+  rescue RdvspAuthorization::OtherAgent => e
+    used = e.agent_email ? "avec le compte #{e.agent_email}, qui n’est pas celui" : "avec un compte qui n’est pas celui"
+    message("Vous êtes connecté à RDV Service Public avec un autre compte",
+            "RDV Service Public vous a connecté #{used} de votre connexion Pont RDV. Déconnectez-vous de RDV Service " \
+            "Public, puis #{start_over}. Si c’est bien votre compte, demandez à l’équipe de Pont RDV de corriger " \
+            "l’e-mail de votre connexion.", :forbidden)
   rescue Rdvsp::Error => e
     Rails.logger.warn("RDV-SP authorization failed: #{e.message}")
-    message("RDV Service Public n’a pas répondu comme prévu", "Rouvrez le lien qui vous a été envoyé pour réessayer.",
+    message("RDV Service Public n’a pas répondu comme prévu", "#{start_over.upcase_first} pour réessayer.",
             :bad_gateway)
   end
 
@@ -43,9 +45,32 @@ class RdvspAuthorizationsController < ApplicationController
     message("Ce lien n’est plus valable", "Demandez un nouveau lien à l’équipe qui vous l’a envoyé.", :not_found)
   end
 
+  # From the button, the agent goes on to the RDV plan they asked for
+  def authorize
+    account = Account.find(@pending["account_id"])
+    if button?
+      RdvspAuthorization.authorize!(account:, provider_user_id: @pending.fetch("provider_user_id"),
+                                    code: params[:code].to_s, redirect_uri: rdvsp_redirect_uri)
+      session[:pipedrive_rdv_plan] = @pending.slice("account_id", "provider_user_id", "person_id")
+      return redirect_to(pipedrive_rdv_plan_resume_path)
+    end
+
+    RdvspAuthorization.authorize!(account:, code: params[:code].to_s, redirect_uri: rdvsp_redirect_uri)
+    message("C’est fait", "Pont RDV peut maintenant créer des usagers dans RDV Service Public en votre nom. " \
+                          "Vous pouvez fermer cette page.", success: true)
+  end
+
+  def button? = @pending["flow"] == "button"
+
+  # Sessions from before the button have no flow: they come from the account's link
+  def start_over
+    if button? then "cliquez à nouveau sur « Prendre RDV » dans Pipedrive"
+    elsif @pending["account_id"] then "rouvrez le lien qui vous a été envoyé"
+    else "recommencez depuis le lien ou le bouton qui vous a amené ici"
+    end
+  end
+
   def expected_state?(state) = state.present? && ActiveSupport::SecurityUtils.secure_compare(state, params[:state].to_s)
 
   def not_found = head(:not_found)
-
-  def redirect_uri = "#{Rails.configuration.x.base_url}#{rdvsp_callback_path}"
 end

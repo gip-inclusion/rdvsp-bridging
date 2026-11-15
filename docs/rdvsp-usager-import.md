@@ -32,7 +32,7 @@ The admin is behind the staff password, so the partner's agent can't click a but
 The token acts as that agent, with all their rights; RDV-SP logs every call against them. It belongs to the account,
 not to a connection: the import is the partner's, whichever of its agents authorizes it. A new authorization replaces
 the previous one. Staff can withdraw it ("Retirer"): the bridge revokes the token at RDV-SP (`POST /oauth/revoke`) and
-forgets it.
+forgets it. The "Prendre RDV" button uses each agent's own authorization instead (`docs/pipedrive-rdv-plan-button.md`).
 
 The client refreshes the access token when it is about to expire, or on a 401, and saves the new refresh token before
 using the new access token (Doorkeeper revokes the old one). A refused refresh (`invalid_grant`) marks the

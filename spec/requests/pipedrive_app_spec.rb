@@ -12,7 +12,7 @@ RSpec.describe "Pipedrive app: the Prendre RDV button and the installation", :pi
   end
 
   describe "Prendre RDV" do
-    before { create(:rdvsp_authorization, account:) }
+    before { create(:rdvsp_authorization, account:, provider_user_id: "501") }
 
     it "opens an RDV plan in RDV-SP, which leads back to the person in Pipedrive" do
       create(:imported_usager, account:, provider_person_id: "7", rdvsp_user_id: 99)
@@ -38,12 +38,14 @@ RSpec.describe "Pipedrive app: the Prendre RDV button and the installation", :pi
       expect(response.body).to include("dans quelle organisation")
     end
 
-    it "trusts the company of the signed token, not the one in the URL" do
-      create(:account, provider_company_id: "24680")
+    it "trusts the company and the user of the signed token, not the ones in the URL" do
+      create(:account, provider_company_id: "24680", name: "Autre entreprise")
 
       click(token: pipedrive_click_token(company_id: 24_680), companyId: 13_579)
+      expect(response.body).to include("Autoriser Pont RDV", "Autre entreprise")
 
-      expect(response.body).to include("n’a pas accès à RDV Service Public")
+      click(token: pipedrive_click_token(user_id: 502), userId: 501)
+      expect(response.body).to include("Autoriser Pont RDV")
     end
 
     it "refuses a click Pipedrive didn't sign, or from an unknown company" do
@@ -54,6 +56,9 @@ RSpec.describe "Pipedrive app: the Prendre RDV button and the installation", :pi
       click(token: pipedrive_click_token(company_id: 1))
       expect(response).to have_http_status(:not_found)
       expect(response.body).to include("pas activé")
+
+      click(token: pipedrive_click_token(user_id: nil))
+      expect(response).to have_http_status(:unauthorized)
     end
 
     it "wants exactly one person" do
@@ -64,13 +69,103 @@ RSpec.describe "Pipedrive app: the Prendre RDV button and the installation", :pi
       expect(response).to have_http_status(:bad_request)
     end
 
-    it "says so when RDV-SP fails" do
+    it "says so when RDV-SP fails, or refuses the agent" do
       create(:imported_usager, account:, provider_person_id: "7", rdvsp_user_id: 99)
       stub_request(:post, "#{rdvsp_url}/api/v1/rdv_plans").to_return(status: 500)
 
       click
-
       expect(response).to have_http_status(:bad_gateway)
+
+      stub_request(:post, "#{rdvsp_url}/api/v1/rdv_plans").to_return_json(status: 403, body: {})
+      click
+      expect(response).to have_http_status(:forbidden)
+      expect(response.body).to include("vous y ajouter")
+    end
+  end
+
+  describe "an agent's first click" do
+    let(:plan_url) { "#{rdvsp_url}/agents/rdv_plans/5" }
+
+    before do
+      create(:rdvsp_authorization, account:, access_token: "import-access")
+      create(:imported_usager, account:, provider_person_id: "7", rdvsp_user_id: 99)
+    end
+
+    # The page's button, then RDV-SP's authorization screen
+    def authorize
+      request = response.parsed_body.at("input[name=request]")["value"]
+      post "/pipedrive/autoriser", params: { request: }, headers: browser
+      Rack::Utils.parse_query(URI(response.location).query).fetch("state")
+    end
+
+    it "has them authorize the bridge once, then opens the plan with their own token" do
+      create(:connection, account:, provider_user_id: "501", agent_email: "Lea@Example.fr")
+      click
+      expect(response.body).to include("Autoriser Pont RDV", "une seule fois")
+
+      state = authorize
+      expect(response.location).to start_with("#{rdvsp_url}/oauth/authorize?")
+      stub_rdvsp_token(access_token: "agent-access")
+      stub_rdvsp_me(id: 78, email: "lea@example.fr")
+      get "/rdvsp/callback", params: { code: "abc", state: }, headers: browser
+      expect(response).to redirect_to("/pipedrive/prendre-rdv/suite")
+
+      plan = stub_request(:post, "#{rdvsp_url}/api/v1/rdv_plans")
+        .with(headers: { "Authorization" => "Bearer agent-access" })
+        .to_return_json(status: 201, body: { rdv_plan: { id: 5, url: plan_url } })
+      follow_redirect!(headers: browser)
+
+      expect(response).to redirect_to(plan_url)
+      expect(plan).to have_been_requested
+      expect(account.rdvsp_agent_authorizations.sole).to have_attributes(provider_user_id: "501", agent_id: 78)
+      expect(account.rdvsp_authorization.access_token).to eq("import-access")
+    end
+
+    it "refuses another RDV-SP agent than the one of their connection" do
+      create(:connection, account:, provider_user_id: "501", agent_email: "lea@example.fr")
+      click
+      state = authorize
+      stub_rdvsp_token(refresh_token: "paul-refresh")
+      stub_rdvsp_me(id: 79, email: "paul@example.fr")
+      revoke = stub_request(:post, "#{rdvsp_url}/oauth/revoke").with(body: hash_including(token: "paul-refresh"))
+
+      get "/rdvsp/callback", params: { code: "abc", state: }, headers: browser
+
+      expect(response).to have_http_status(:forbidden)
+      expect(response.body).to include("autre compte", "paul@example.fr")
+      expect(revoke).to have_been_requested
+      expect(account.rdvsp_agent_authorizations).to be_empty
+    end
+
+    it "asks again when their authorization is lost" do
+      create(:rdvsp_authorization, account:, provider_user_id: "501", lost_at: 1.day.ago)
+
+      click
+
+      expect(response.body).to include("Autoriser Pont RDV", "ne fonctionne plus")
+    end
+
+    it "says to click again when they decline, or come back without a pending plan" do
+      click
+      get "/rdvsp/callback", params: { error: "access_denied", state: authorize }, headers: browser
+      expect(response.body).to include("Vous n’avez pas autorisé", "Prendre RDV")
+      expect(account.rdvsp_agent_authorizations).to be_empty
+
+      get "/pipedrive/prendre-rdv/suite", headers: browser
+      expect(response).to have_http_status(:not_found)
+      expect(response.body).to include("Prendre RDV")
+    end
+
+    it "refuses a tampered or expired request" do
+      post "/pipedrive/autoriser", params: { request: "abc" }, headers: browser
+      expect(response).to have_http_status(:not_found)
+
+      click
+      request = response.parsed_body.at("input[name=request]")["value"]
+      travel 61.minutes do
+        post "/pipedrive/autoriser", params: { request: }, headers: browser
+        expect(response).to have_http_status(:not_found)
+      end
     end
   end
 

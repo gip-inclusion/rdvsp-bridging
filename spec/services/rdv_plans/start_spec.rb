@@ -2,13 +2,20 @@ require "rails_helper"
 
 RSpec.describe RdvPlans::Start, :rdvsp do
   let(:account) { create(:account, provider_company_id: "13579", provider_company_domain: "acme") }
-  let(:result) { described_class.call(account:, person_id: "7", return_url: "https://bridge.example/back") }
+  let(:authorization) { create(:rdvsp_authorization, account:, provider_user_id: "501", access_token: "agent-access") }
+  let(:result) { start }
   let(:plan_url) { "#{rdvsp_url}/agents/rdv_plans/5" }
+  let(:as_agent) { { "Authorization" => "Bearer agent-access" } }
 
-  before { create(:rdvsp_authorization, account:) }
+  # The account's own authorization serves the import, never the button
+  before { create(:rdvsp_authorization, account:, access_token: "import-access") }
+
+  def start(with: authorization)
+    described_class.call(account:, authorization: with, person_id: "7", return_url: "https://bridge.example/back")
+  end
 
   def stub_rdv_plan(user_id)
-    stub_request(:post, "#{rdvsp_url}/api/v1/rdv_plans").with(body: {
+    stub_request(:post, "#{rdvsp_url}/api/v1/rdv_plans").with(headers: as_agent, body: {
       user: { id: user_id }, return_url: "https://bridge.example/back", dossier_url: "https://acme.pipedrive.com/person/7",
     }.to_json).to_return_json(status: 201, body: { rdv_plan: { id: 5, user_id:, url: plan_url } })
   end
@@ -32,7 +39,10 @@ RSpec.describe RdvPlans::Start, :rdvsp do
   end
 
   context "when the person isn't transferred yet" do
-    before { account.update!(rdvsp_organisation_id: 42) }
+    before do
+      account.update!(rdvsp_organisation_id: 42)
+      stub_rdvsp_organisations([{ id: 41, name: "Antenne Lyon" }, { id: 42, name: "Antenne Paris" }])
+    end
 
     it "uses the usager of the account's organisation with the same e-mail, and records it" do
       stub_person(email: [{ value: "ada@example.fr", primary: true }])
@@ -44,11 +54,11 @@ RSpec.describe RdvPlans::Start, :rdvsp do
         .to have_attributes(provider_person_id: "7", rdvsp_user_id: 98, rdvsp_organisation_id: 42)
     end
 
-    it "creates the usager when the organisation has none like them" do
+    it "creates the usager in the clicking agent's name when the organisation has none like them" do
       stub_person
       stub_rdvsp_organisation_users(42, [usager(98, "Grace", "Hopper")])
       create_user = stub_request(:post, "#{rdvsp_url}/api/v1/users")
-        .with(body: hash_including("first_name" => "Ada", "organisation_ids" => [42]))
+        .with(headers: as_agent, body: hash_including("first_name" => "Ada", "organisation_ids" => [42]))
         .to_return_json(body: { user: { id: 99 } })
       stub_rdv_plan(99)
 
@@ -74,8 +84,17 @@ RSpec.describe RdvPlans::Start, :rdvsp do
       stub_rdvsp_organisation_users(42, [])
       stub_request(:post, "#{rdvsp_url}/api/v1/users")
         .to_return_json(status: 422, body: { errors: { birth_date: [{ error: "invalid" }] } })
-      expect(described_class.call(account:, person_id: "7", return_url: "https://bridge.example/back").reason)
-        .to eq(:rejected)
+      expect(start.reason).to eq(:rejected)
+    end
+
+    # RDV-SP then lists the usagers of the agent's own organisations instead, and refuses to create one
+    it "stops when the agent isn't in the account's organisation, recording nothing" do
+      stub_rdvsp_organisations([{ id: 41, name: "Antenne Lyon" }])
+      stub_person(email: [{ value: "ada@example.fr", primary: true }])
+      stub_rdvsp_organisation_users(42, [usager(98, "Ada", "Lovelace", email: "ada@example.fr")])
+
+      expect(result.reason).to eq(:forbidden)
+      expect(account.imported_usagers).to be_empty
     end
 
     it "stops when Pipedrive doesn't know the person" do
@@ -104,12 +123,19 @@ RSpec.describe RdvPlans::Start, :rdvsp do
     end
   end
 
-  it "stops when no agent authorized the bridge, or the authorization is lost" do
-    account.rdvsp_authorization.update!(lost_at: Time.current)
-    expect(result.reason).to eq(:no_authorization)
+  it "stops when the agent hasn't authorized the bridge, or their authorization is lost" do
+    expect(start(with: nil).reason).to eq(:no_authorization)
 
-    account.rdvsp_authorization.destroy!
-    expect(described_class.call(account: account.reload, person_id: "7", return_url: "x").reason)
-      .to eq(:no_authorization)
+    authorization.update!(lost_at: Time.current)
+    expect(result.reason).to eq(:no_authorization)
+  end
+
+  it "stops when RDV-SP refuses to refresh the agent's token" do
+    create(:imported_usager, account:, provider_person_id: "7", rdvsp_user_id: 99)
+    authorization.update!(expires_at: 1.minute.ago)
+    stub_request(:post, "#{rdvsp_url}/oauth/token").to_return_json(status: 400, body: { error: "invalid_grant" })
+
+    expect(result.reason).to eq(:no_authorization)
+    expect(authorization.reload).to be_lost
   end
 end

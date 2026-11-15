@@ -1,13 +1,15 @@
 # The bridge's private app in Pipedrive: the "Prendre RDV" link action on a person, the way back from RDV-SP, and the
-# installation
+# installation. Each agent clicks with their own RDV-SP authorization, given at their first click.
 class PipedriveAppController < ApplicationController
   include PublicMessages
+  include RdvspOauth
 
   layout "public"
 
   FAILURES = {
-    no_authorization: ["Pont RDV n’a pas accès à RDV Service Public",
-                       "Demandez à l’équipe de Pont RDV un lien pour l’autoriser.", :forbidden,],
+    forbidden: ["RDV Service Public ne vous donne pas accès à cette organisation",
+                "Demandez à un administrateur de l’organisation de vous y ajouter, puis cliquez à nouveau sur " \
+                "« Prendre RDV ».", :forbidden,],
     no_organisation: ["Pont RDV ne sait pas dans quelle organisation créer cette personne",
                       "Demandez à l’équipe de Pont RDV de la choisir.",
                       :unprocessable_content,],
@@ -27,6 +29,8 @@ class PipedriveAppController < ApplicationController
 
   def rdv_plan
     claims = Pipedrive::App.claims(params[:token])
+    raise Pipedrive::App::InvalidToken, "no userId" if claims["userId"].blank?
+
     account = Account.find_by(provider: "pipedrive", provider_company_id: claims["companyId"].to_s)
     unless account
       return message("Pont RDV n’est pas activé pour votre entreprise", "Contactez l’équipe de Pont RDV.", :not_found)
@@ -38,10 +42,32 @@ class PipedriveAppController < ApplicationController
                      :bad_request)
     end
 
-    start(account, person_ids.first)
+    start(account, claims["userId"].to_s, person_ids.first)
   rescue Pipedrive::App::InvalidToken
     message("Ce lien ne vient pas de Pipedrive",
             "Ouvrez la fiche de la personne dans Pipedrive et cliquez à nouveau sur « Prendre RDV ».", :unauthorized)
+  end
+
+  # The button of the authorization page: on to RDV-SP, which brings the agent back to the callback, then to #resume
+  def authorize
+    account_id, provider_user_id, person_id = request_verifier.verified(params[:request].to_s)
+    unless provider_user_id.present? && person_id
+      return message("Cette demande a expiré", "Cliquez à nouveau sur « Prendre RDV » dans Pipedrive.", :not_found)
+    end
+
+    start_rdvsp_oauth("flow" => "button", "account_id" => account_id, "provider_user_id" => provider_user_id,
+                      "person_id" => person_id)
+  end
+
+  def resume
+    pending = session.delete(:pipedrive_rdv_plan) || {}
+    account = Account.find_by(id: pending["account_id"])
+    unless account
+      return message("Ce rendez-vous n’est plus en attente", "Cliquez à nouveau sur « Prendre RDV » dans Pipedrive.",
+                     :not_found)
+    end
+
+    start(account, pending["provider_user_id"], pending["person_id"])
   end
 
   # The "Retour" link RDV-SP shows on the plan and the RDV: RDV-SP only accepts the bridge's host there
@@ -68,10 +94,17 @@ class PipedriveAppController < ApplicationController
 
   private
 
-  def start(account, person_id)
+  def start(account, provider_user_id, person_id)
+    authorization = account.rdvsp_agent_authorizations.find_by(provider_user_id:)
+    if authorization.nil? || authorization.lost?
+      return ask_authorization(account, provider_user_id, person_id, lost: authorization.present?)
+    end
+
     back_path = pipedrive_back_path(token: verifier.generate([account.id, person_id]))
-    result = RdvPlans::Start.call(account:, person_id:, return_url: "#{Rails.configuration.x.base_url}#{back_path}")
+    result = RdvPlans::Start.call(account:, authorization:, person_id:,
+                                  return_url: "#{Rails.configuration.x.base_url}#{back_path}")
     return redirect_to(result.url, allow_other_host: true) if result.success?
+    return ask_authorization(account, provider_user_id, person_id, lost: true) if result.reason == :no_authorization
 
     message(*FAILURES.fetch(result.reason))
   rescue Rdvsp::Error, Pipedrive::Error => e
@@ -79,7 +112,16 @@ class PipedriveAppController < ApplicationController
     message("RDV Service Public ou Pipedrive n’a pas répondu comme prévu", "Réessayez dans un instant.", :bad_gateway)
   end
 
+  def ask_authorization(account, provider_user_id, person_id, lost:)
+    @account = account
+    @lost = lost
+    @authorization_request = request_verifier.generate([account.id, provider_user_id, person_id], expires_in: 1.hour)
+    render :authorization
+  end
+
   def verifier = Rails.application.message_verifier(:pipedrive_person)
+
+  def request_verifier = Rails.application.message_verifier(:pipedrive_rdv_plan_request)
 
   def callback_url = "#{Rails.configuration.x.base_url}#{pipedrive_app_callback_path}"
 end
