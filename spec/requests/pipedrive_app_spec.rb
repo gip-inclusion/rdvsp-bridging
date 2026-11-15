@@ -38,11 +38,13 @@ RSpec.describe "Pipedrive app: the Prendre RDV button and the installation", :pi
       expect(response.body).to include("dans quelle organisation")
     end
 
-    it "trusts the company of the signed token, not the one in the URL" do
-      create(:account, provider_company_id: "24680")
+    it "trusts the company and the user of the signed token, not the ones in the URL" do
+      create(:account, provider_company_id: "24680", name: "Autre entreprise")
 
       click(token: pipedrive_click_token(company_id: 24_680), companyId: 13_579)
+      expect(response.body).to include("Autoriser Pont RDV", "Autre entreprise")
 
+      click(token: pipedrive_click_token(user_id: 502), userId: 501)
       expect(response.body).to include("Autoriser Pont RDV")
     end
 
@@ -54,6 +56,9 @@ RSpec.describe "Pipedrive app: the Prendre RDV button and the installation", :pi
       click(token: pipedrive_click_token(company_id: 1))
       expect(response).to have_http_status(:not_found)
       expect(response.body).to include("pas activé")
+
+      click(token: pipedrive_click_token(user_id: nil))
+      expect(response).to have_http_status(:unauthorized)
     end
 
     it "wants exactly one person" do
@@ -151,10 +156,16 @@ RSpec.describe "Pipedrive app: the Prendre RDV button and the installation", :pi
       expect(response.body).to include("Prendre RDV")
     end
 
-    it "refuses a tampered request" do
+    it "refuses a tampered or expired request" do
       post "/pipedrive/autoriser", params: { request: "abc" }, headers: browser
-
       expect(response).to have_http_status(:not_found)
+
+      click
+      request = response.parsed_body.at("input[name=request]")["value"]
+      travel 61.minutes do
+        post "/pipedrive/autoriser", params: { request: }, headers: browser
+        expect(response).to have_http_status(:not_found)
+      end
     end
   end
 
