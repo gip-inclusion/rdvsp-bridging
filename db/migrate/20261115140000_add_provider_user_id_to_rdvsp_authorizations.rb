@@ -4,12 +4,10 @@ class AddProviderUserIdToRdvspAuthorizations < ActiveRecord::Migration[8.1]
 
   def change
     add_column :rdvsp_authorizations, :provider_user_id, :string, if_not_exists: true
-    add_index :rdvsp_authorizations, %i[account_id provider_user_id], unique: true, algorithm: :concurrently,
-                                                                      if_not_exists: true
+    add_index :rdvsp_authorizations, %i[account_id provider_user_id], unique: true, algorithm: :concurrently
     add_index :rdvsp_authorizations, :account_id, name: "index_rdvsp_authorizations_on_account", unique: true,
-                                                  where: "provider_user_id IS NULL", algorithm: :concurrently,
-                                                  if_not_exists: true
+                                                  where: "provider_user_id IS NULL", algorithm: :concurrently
     remove_index :rdvsp_authorizations, :account_id, unique: true, name: "index_rdvsp_authorizations_on_account_id",
-                                                     algorithm: :concurrently, if_exists: true
+                                                     algorithm: :concurrently
   end
 end
