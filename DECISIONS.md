@@ -223,7 +223,8 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
     `usager_details` only. No RDV-SP authorization, an RDV the agent can't see, a collective RDV or RDV-SP failing:
     the fallback applies.
 40. **(you → me)** The RDV activity type is chosen in the admin among the company's active Pipedrive types, or created
-    there; "RDV Service Public" stays the default. A partner may want the type of their own meetings ("RDV
+    there; "RDV Service Public" stays the default, set at onboarding only when the account has no type yet, so
+    entering a new API token keeps the chosen one. A partner may want the type of their own meetings ("RDV
     Individuel"), so activities of that type keep blocking time: the bridge recognises its own by id only
     (`Rdv#provider_object_id`), and drops any busy time Pipedrive announced for a new activity before its id was saved.
 41. **(you → me)** Pont RDV's pages wear the itou theme of the Plateforme de l'inclusion, vendored from a release tag in

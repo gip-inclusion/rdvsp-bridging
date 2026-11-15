@@ -32,6 +32,13 @@ RSpec.describe Pipedrive::Onboard do
     expect(account).to have_attributes(rdv_activity_type_key: "rdv_sp", rdv_activity_type_name: "RDV Service Public")
   end
 
+  it "keeps the activity type chosen in the admin when the company is onboarded again" do
+    create(:account, provider_company_id: "7", rdv_activity_type_key: "meeting", rdv_activity_type_name: "Réunion")
+
+    expect(result).to be_success
+    expect(account).to have_attributes(rdv_activity_type_key: "meeting", rdv_activity_type_name: "Réunion")
+  end
+
   it "replaces this bridge's previous webhooks, keeping other bridges' ones" do
     result
 
