@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_15_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -250,7 +250,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
     t.datetime "lost_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_rdvsp_authorizations_on_account_id", unique: true
+    t.string "provider_user_id"
+    t.index ["account_id", "provider_user_id"], name: "index_rdvsp_authorizations_on_account_id_and_provider_user_id", unique: true
+    t.index ["account_id"], name: "index_rdvsp_authorizations_on_account", unique: true, where: "(provider_user_id IS NULL)"
   end
 
   create_table "usager_imports", force: :cascade do |t|

@@ -1,11 +1,12 @@
-# An RDV-SP agent's OAuth authorization for an account: the bridge calls RDV-SP's API as that agent
+# An RDV-SP agent's OAuth authorization for an account: the bridge calls RDV-SP's API as that agent. The account's own
+# (no provider_user_id) serves the import; each Pipedrive user's serves their clicks on "Prendre RDV".
 class RdvspAuthorization < ApplicationRecord
   belongs_to :account
 
   encrypts :access_token
   encrypts :refresh_token
 
-  validates :account_id, uniqueness: true
+  validates :provider_user_id, uniqueness: { scope: :account_id }
   validates :agent_id, :access_token, :refresh_token, :expires_at, presence: true
 
   LINK_VALIDITY = 7.days
@@ -14,9 +15,10 @@ class RdvspAuthorization < ApplicationRecord
 
   def self.account_for(token) = Account.find_signed(token, purpose: :rdvsp_authorization)
 
-  # Exchanges the code an agent brought back from RDV-SP, replacing the account's earlier authorization
-  def self.authorize!(account:, code:, redirect_uri:)
-    authorization = account.rdvsp_authorization || account.build_rdvsp_authorization
+  # Exchanges the code an agent brought back from RDV-SP, replacing the earlier authorization of the account, or of
+  # that Pipedrive user
+  def self.authorize!(account:, code:, redirect_uri:, provider_user_id: nil)
+    authorization = find_or_initialize_by(account:, provider_user_id:)
     previous_refresh_token = authorization.refresh_token
     authorization.assign_attributes(**Rdvsp::Oauth.exchange_code(code:, redirect_uri:), lost_at: nil)
     agent = Rdvsp::Client.new(authorization).me

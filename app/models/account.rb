@@ -7,7 +7,9 @@ class Account < ApplicationRecord
   encrypts :access_token
 
   has_many :connections, dependent: :destroy
-  has_one :rdvsp_authorization, dependent: :destroy
+  has_one :rdvsp_authorization, -> { where(provider_user_id: nil) }, dependent: :destroy, inverse_of: :account
+  has_many :rdvsp_agent_authorizations, -> { where.not(provider_user_id: nil) },
+           class_name: "RdvspAuthorization", dependent: :destroy, inverse_of: :account
   has_many :imported_usagers, dependent: :delete_all
   has_many :usager_imports, dependent: :delete_all
 
