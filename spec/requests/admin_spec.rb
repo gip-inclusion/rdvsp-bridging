@@ -28,7 +28,7 @@ RSpec.describe "Admin" do
 
     get "/admin/connections/#{connection.id}", headers: { "Authorization" => auth, "User-Agent" => browser }
 
-    expect(response.body).to include("Dernier passage de RDV-SP : il y a 5 minutes")
+    expect(response.body).to include("Dernier passage de RDV-SP", "il y a 5 minutes")
   end
 
   it "builds the CalDAV URL from the configured base URL, not from the request's host" do

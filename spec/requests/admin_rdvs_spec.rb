@@ -15,7 +15,7 @@ RSpec.describe "Admin: a connection's RDVs" do
 
     get("/admin/connections/#{connection.id}", headers:)
 
-    expect(response.body).to include("transmis : 1", "ignorés : 1", "1182824", "1259524", "10/11/2026 16:15:10")
+    expect(response.body).to include("1 transmis", "1 ignoré", "1182824", "1259524", "10/11/2026 16:15:10")
     expect(response.body).not_to include("Jeanne Dupont")
   end
 

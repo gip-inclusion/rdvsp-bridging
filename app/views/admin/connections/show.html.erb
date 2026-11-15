@@ -1,71 +1,132 @@
-<h1><%= @connection.provider_user_name || @connection.provider_user_id %></h1>
-<p class="muted"><%= link_to @connection.account.name, admin_account_path(@connection.account) %> · agent RDV-SP : <%= @connection.agent_email || "?" %></p>
+<% rdvs = @connection.rdvs %>
+<% failed = rdvs.where(state: "failed").count %>
+<%= render "admin/title", title: @connection.provider_user_name || @connection.provider_user_id,
+                          back: [@connection.account.name, admin_account_path(@connection.account)],
+                          badge: connection_badge(@connection, size: :base),
+                          subtitle: "Agent RDV-SP : #{@connection.agent_email || '?'}" %>
 
-<h2>Identifiants à saisir dans RDV Service Public</h2>
-<p>Dans RDV Service Public : <em>Synchronisation d’agenda → Connecter mon agenda via Caldav</em>.</p>
-<table>
-  <tr><th>Identifiant</th><td><code><%= @connection.username %></code></td></tr>
-  <tr><th>Mot de passe</th><td>
+<section class="s-section">
+  <div class="s-section__container container">
     <% if @password %>
-      <code><%= @password %></code> <span class="ko">(affiché une seule fois)</span>
-    <% else %>
-      <span class="muted">masqué</span> — <%= button_to "Générer un nouveau mot de passe", reset_password_admin_connection_path(@connection), form_class: "inline", data: { turbo: false } %>
+      <div class="alert alert-warning" role="status">
+        <label class="form-label fw-bold" for="caldav-password">Mot de passe, affiché une seule fois</label>
+        <%= copy_field "caldav-password", @password %>
+      </div>
     <% end %>
-  </td></tr>
-  <tr><th>URL de l’agenda</th><td><code><%= "#{Rails.configuration.x.base_url}#{@connection.calendar_path}" %></code></td></tr>
-</table>
+    <div class="s-section__row row">
+      <div class="s-section__col col-12 col-xl-8">
+        <div class="c-box mb-3 mb-md-4">
+          <div class="d-flex flex-column flex-sm-row gap-2 justify-content-between align-items-sm-center mb-3">
+            <h2 class="h3 mb-0">État</h2>
+            <%= button_to rebuild_admin_connection_path(@connection), class: "btn btn-outline-primary btn-sm btn-ico" do %>
+              <i class="ri-refresh-line" aria-hidden="true"></i><span>Reconstruire</span>
+            <% end %>
+          </div>
+          <div class="row g-3">
+            <div class="col-6 col-md-3 pont-stat">
+              <small>Dernier passage de RDV-SP</small>
+              <strong><%= @connection.last_seen_at ? "il y a #{time_ago_in_words(@connection.last_seen_at)}" : "jamais" %></strong>
+            </div>
+            <div class="col-6 col-md-3 pont-stat">
+              <small>Dernière reconstruction</small>
+              <strong><%= @connection.rebuilt_at ? "il y a #{time_ago_in_words(@connection.rebuilt_at)}" : "jamais" %></strong>
+            </div>
+            <div class="col-6 col-md-3 pont-stat">
+              <small>Occupations</small><strong><%= @connection.busy_blocks.live.count %></strong>
+            </div>
+            <div class="col-6 col-md-3 pont-stat"><small>RDV en échec</small><strong><%= failed %></strong></div>
+          </div>
+        </div>
 
-<h2>État</h2>
-<p>
-  Dernier passage de RDV-SP : <%= @connection.last_seen_at ? "il y a #{time_ago_in_words(@connection.last_seen_at)}" : "jamais" %> ·
-  dernière reconstruction : <%= @connection.rebuilt_at ? "il y a #{time_ago_in_words(@connection.rebuilt_at)}" : "jamais" %> ·
-  <%= @connection.busy_blocks.live.count %> occupations ·
-  <%= @connection.rdvs.where(state: "failed").count %> RDV en échec
-  <%= button_to "Reconstruire", rebuild_admin_connection_path(@connection), form_class: "inline" %>
-</p>
-
-<h2>Rendez-vous reçus de RDV-SP</h2>
-<p>
-  transmis : <%= @connection.rdvs.transmitted.count %> ·
-  ignorés : <%= @connection.rdvs.ignored.count %> (déjà pris avant la connexion) ·
-  en échec : <%= @connection.rdvs.where(state: "failed").count %> ·
-  annulés : <%= @connection.rdvs.cancelled.count %>
-</p>
-<p class="muted">
-  <% if @connection.baseline_started_at %>
-    Dernier test de connexion par RDV-SP : <%= paris_time(@connection.baseline_started_at) %> ;
-    <%= @connection.rdvs.ignored.where(created_at: @connection.baseline_started_at..@connection.baseline_until).count %>
-    RDV existants reçus et ignorés jusqu’à <%= paris_time(@connection.baseline_until) %>.
-  <% else %>
-    Aucun test de connexion par RDV-SP enregistré depuis que la passerelle ignore les RDV existants.
-  <% end %>
-  <% if @connection.baseline_max_rdvsp_id %>
-    Les RDV de numéro RDV-SP inférieur ou égal à <%= @connection.baseline_max_rdvsp_id %> reçus plus tard sont ignorés aussi.
-  <% end %>
-</p>
-<p><%= link_to "Ignorer les RDV reçus avant…", new_admin_connection_ignored_rdv_path(@connection) %></p>
-<% if @rdvs.any? %>
-  <table>
-    <tr><th>Reçu le</th><th>Début</th><th>N° RDV-SP</th><th>État</th><th></th></tr>
-    <% @rdvs.each do |rdv| %>
-      <tr>
-        <td><%= paris_time(rdv.created_at) %></td>
-        <td><%= paris_time(rdv.starts_at) %></td>
-        <td><%= rdv.rdvsp_id || "?" %></td>
-        <td><%= rdv_status(rdv) %></td>
-        <td>
-          <% if rdv.ignored? %>
-            <%= button_to "Transmettre quand même", release_admin_rdv_path(rdv), form_class: "inline" %>
+        <div class="c-box mb-3 mb-md-4">
+          <h2 class="h3">Rendez-vous reçus de RDV-SP</h2>
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <%= badge(count_label(rdvs.transmitted.count, "transmis", "transmis"), :success) %>
+            <%= badge(count_label(rdvs.ignored.count, "ignoré"), :info) %>
+            <%= badge(count_label(failed, "en échec", "en échec"), :danger) %>
+            <%= badge(count_label(rdvs.cancelled.count, "annulé"), :neutral) %>
+          </div>
+          <div class="alert alert-info" role="status">
+            <div class="row">
+              <div class="col-auto pe-0"><i class="ri-information-line ri-xl text-info" aria-hidden="true"></i></div>
+              <div class="col fs-sm">
+                <p class="mb-2">
+                  Les RDV déjà pris avant la connexion sont ignorés.
+                  <% if @connection.baseline_started_at %>
+                    Dernier test de connexion par RDV-SP : <%= paris_time(@connection.baseline_started_at) %> ;
+                    <%= rdvs.ignored.where(created_at: @connection.baseline_started_at..@connection.baseline_until).count %>
+                    RDV existants reçus et ignorés jusqu’à <%= paris_time(@connection.baseline_until) %>.
+                  <% else %>
+                    Aucun test de connexion par RDV-SP enregistré depuis que la passerelle ignore les RDV existants.
+                  <% end %>
+                  <% if @connection.baseline_max_rdvsp_id %>
+                    Les RDV de numéro RDV-SP inférieur ou égal à <%= @connection.baseline_max_rdvsp_id %> reçus plus
+                    tard sont ignorés aussi.
+                  <% end %>
+                </p>
+                <%= link_to "Ignorer les RDV reçus avant…", new_admin_connection_ignored_rdv_path(@connection),
+                            class: "btn-link" %>
+              </div>
+            </div>
+          </div>
+          <% if @rdvs.any? %>
+            <ul class="list-group list-group-flush pont-rows">
+              <% @rdvs.each do |rdv| %>
+                <li class="list-group-item px-0 d-flex gap-3 justify-content-between align-items-start">
+                  <div>
+                    <strong><%= paris_time(rdv.starts_at) %></strong>
+                    <div class="fs-sm text-muted">
+                      RDV n° <%= rdv.rdvsp_id || "?" %> · reçu le <%= paris_time(rdv.created_at) %>
+                    </div>
+                    <% if rdv.ignored? %>
+                      <%= button_to release_admin_rdv_path(rdv), class: "btn btn-link btn-sm btn-ico px-0" do %>
+                        <i class="ri-send-plane-line" aria-hidden="true"></i><span>Transmettre quand même</span>
+                      <% end %>
+                    <% end %>
+                  </div>
+                  <%= rdv_badge(rdv) %>
+                </li>
+              <% end %>
+            </ul>
           <% end %>
-        </td>
-      </tr>
-    <% end %>
-  </table>
-<% end %>
+        </div>
+      </div>
 
-<h2>Options</h2>
-<%= form_with model: @connection, url: admin_connection_path(@connection) do |f| %>
-  <label>E-mail de l’agent <%= f.email_field :agent_email, size: 40 %></label>
-  <label><%= f.check_box :include_all_day %> Les activités sans heure bloquent toute la journée</label>
-  <%= f.submit "Enregistrer" %>
-<% end %>
+      <div class="s-section__col col-12 col-xl-4">
+        <div class="c-box mb-3 mb-md-4">
+          <h2 class="h3">Identifiants CalDAV</h2>
+          <p class="fs-sm text-muted">
+            À saisir dans RDV Service Public : <em>Synchronisation d’agenda → Connecter mon agenda via Caldav</em>.
+          </p>
+          <label class="form-label" for="caldav-url">URL de l’agenda</label>
+          <%= copy_field "caldav-url", "#{Rails.configuration.x.base_url}#{@connection.calendar_path}" %>
+          <label class="form-label mt-3" for="caldav-username">Identifiant</label>
+          <%= copy_field "caldav-username", @connection.username %>
+          <span class="form-label d-block mt-3">Mot de passe</span>
+          <% if @password %>
+            <p class="mb-0">ci-dessus, affiché une seule fois</p>
+          <% else %>
+            <p class="mb-2 text-disabled fst-italic">masqué</p>
+            <%= button_to reset_password_admin_connection_path(@connection), data: { turbo: false },
+                          class: "btn btn-outline-primary btn-sm btn-ico" do %>
+              <i class="ri-key-2-line" aria-hidden="true"></i><span>Générer un nouveau mot de passe</span>
+            <% end %>
+          <% end %>
+        </div>
+        <div class="c-box mb-3 mb-md-4">
+          <h2 class="h3">Options</h2>
+          <%= form_with model: @connection, url: admin_connection_path(@connection) do |f| %>
+            <%= f.label :agent_email, "E-mail de l’agent RDV-SP", class: "form-label" %>
+            <%= f.email_field :agent_email, class: "form-control mb-3" %>
+            <div class="form-check form-switch mb-3">
+              <%= f.check_box :include_all_day, class: "form-check-input", role: "switch" %>
+              <%= f.label :include_all_day, "Les activités sans heure bloquent toute la journée",
+                          class: "form-check-label" %>
+            </div>
+            <%= f.submit "Enregistrer", class: "btn btn-primary btn-block" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
