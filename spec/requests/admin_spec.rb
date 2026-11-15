@@ -49,7 +49,7 @@ RSpec.describe "Admin" do
     get "/admin/connections/#{connection.id}",
         headers: { "Authorization" => auth, "User-Agent" => browser, "X-Forwarded-Host" => "evil.example" }
 
-    expect(response.body).to include("http://localhost:3010#{connection.calendar_path}")
+    expect(response.body).to include("http://localhost:3010#{connection.calendar_path}", "http://localhost:3010/agenda/")
     expect(response.body).not_to include("evil.example")
   end
 end

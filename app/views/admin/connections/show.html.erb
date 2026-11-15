@@ -112,6 +112,14 @@
               <i class="ri-key-2-line" aria-hidden="true"></i><span>Générer un nouveau mot de passe</span>
             <% end %>
           <% end %>
+          <hr class="my-4">
+          <label class="form-label" for="caldav-setup-link">Lien à envoyer à l’agent</label>
+          <%= copy_field "caldav-setup-link",
+                         "#{Rails.configuration.x.base_url}#{caldav_setup_path(@connection.generate_token_for(:caldav_setup))}" %>
+          <div class="form-text">
+            L’agent y trouve l’URL et l’identifiant, et y génère son mot de passe. Valable 7 jours, jusqu’à ce qu’un
+            nouveau mot de passe soit créé.
+          </div>
         </div>
         <div class="c-box mb-3 mb-md-4">
           <h2 class="h3">Options</h2>
