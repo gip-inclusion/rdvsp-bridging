@@ -42,7 +42,8 @@ Marianne, Remix Icon), which les-emplois vendors from a release tag.
 - **Compte**: main action "Connecter un utilisateur Pipedrive". Blocks:
   - Connexions: one row per connection, its agent and a badge (below);
   - RDV Service Public: who authorized and when, the organisation with "Changer", the "Importer des bénéficiaires" and
-    "Retirer l'autorisation" buttons, the authorization link with "Copier", the list of imports with a state badge;
+    "Retirer l'autorisation" buttons, the authorization link with "Copier", the list of imports with a state badge,
+    then the agents who authorized the "Prendre RDV" button (Pipedrive name, RDV-SP e-mail, date, "Perdue", "Retirer");
   - Pipedrive: domain, activity type **by name** (with "Changer"; `rdv_activity_type_name` is set by onboarding and by
     the activity type page, so accounts onboarded before show the key until the type is chosen again), live updates
     (webhook);

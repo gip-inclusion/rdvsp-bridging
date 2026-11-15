@@ -36,6 +36,7 @@ Rails.application.routes.draw do
     resources :accounts, only: %i[index show new create update] do
       resources :connections, only: %i[new create]
       resource :rdvsp_authorization, only: :destroy
+      resources :rdvsp_agent_authorizations, only: :destroy
       resource :rdvsp_organisation, only: %i[edit update]
       resource :rdv_activity_type, only: %i[edit update]
       resources :usager_imports, only: %i[new create]
