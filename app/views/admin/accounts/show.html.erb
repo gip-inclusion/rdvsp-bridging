@@ -26,20 +26,13 @@
             <ul class="list-group list-group-flush pont-rows">
               <% @account.connections.each do |connection| %>
                 <li class="list-group-item px-0">
-                  <div class="d-flex flex-column flex-md-row gap-2 justify-content-between">
-                    <div>
+                  <div class="d-flex flex-column flex-md-row gap-2 justify-content-between align-items-md-center">
+                    <div class="text-break">
                       <%= link_to connection.provider_user_name || connection.provider_user_id,
                                   admin_connection_path(connection), class: "fw-bold" %>
                       <div class="fs-sm text-muted">agent RDV-SP : <%= connection.agent_email || "?" %></div>
                     </div>
-                    <div class="d-flex flex-wrap gap-2 align-items-center fs-sm">
-                      <%= connection_badge(connection) %>
-                      <span class="text-muted">
-                        <%= connection.last_seen_at ? "passé il y a #{time_ago_in_words(connection.last_seen_at)}" : "jamais passé" %> ·
-                        <%= count_label(connection.busy_blocks.live.count, "occupation") %> ·
-                        <%= count_label(connection.rdvs.ignored.count, "ignoré") %>
-                      </span>
-                    </div>
+                    <div class="flex-shrink-0"><%= connection_badge(connection) %></div>
                   </div>
                 </li>
               <% end %>

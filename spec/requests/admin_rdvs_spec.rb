@@ -63,12 +63,4 @@ RSpec.describe "Admin: a connection's RDVs" do
       expect(connection.rdvs.ignored).to be_empty
     end
   end
-
-  it "counts each connection's ignored RDVs on the account page" do
-    create_list(:rdv, 2, connection:, ignored_at: Time.current, payload: nil)
-
-    get("/admin/accounts/#{connection.account.id}", headers:)
-
-    expect(response.body).to include("2 ignorés")
-  end
 end
