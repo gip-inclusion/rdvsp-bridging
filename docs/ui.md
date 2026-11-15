@@ -63,6 +63,15 @@ silence alert went out since its last visit (`silence_alerted_at` after `last_se
 (success). Account badge: "OK" (success) or "En erreur depuis le …" (danger). RDV badge colors: transmitted = success,
 ignored = info, pending = warning, failed = danger, cancelled = neutral.
 
+## The agent's credentials page
+
+The admin used to read the CalDAV credentials out to the agent. The connection's "Identifiants CalDAV" block now gives
+a link to send instead: `/agenda/<token>`, a `generates_token_for(:caldav_setup)` token valid 7 days and tied to the
+last characters of the password digest, so any new password spends it. The public page shows the URL and username
+with "Copier" buttons, and a "Générer mon mot de passe" button: the password exists only once clicked (a link preview
+can't create it), is shown once (`Cache-Control: no-store`) and replaces any previous one, which the page says. The
+bridge never stores a password in clear, so it can't show the current one.
+
 ## Not in this change
 
 The static error pages (`public/*.html`), the mailers, dark mode, and any text change beyond splitting long option

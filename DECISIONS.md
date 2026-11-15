@@ -231,3 +231,6 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
     partners, sit under the République française block, the Plateforme de l'inclusion logo and "Pont RDV"; the admin
     keeps its own header. Lists replace tables so the admin reads on a phone. The RDV activity type is stored with its
     name, to show it without asking Pipedrive (`docs/ui.md`).
+42. **(you → me)** An agent gets their CalDAV credentials from a link the team sends: valid 7 days, spent by any new
+    password. The page creates the password only when the agent clicks, shows it once, and says it replaces the
+    previous one; no password is ever stored in clear (`docs/ui.md`).
