@@ -21,6 +21,12 @@ Rails.application.routes.draw do
     post ":token", action: :create, constraints: { token: %r{[^/]+} }
   end
 
+  scope "equipe", controller: :partner_sessions do
+    delete "/", action: :destroy, as: :partner_session
+    get ":token", action: :show, as: :partner_link, constraints: { token: %r{[^/]+} }
+    post ":token", action: :create, constraints: { token: %r{[^/]+} }
+  end
+
   scope "pipedrive", controller: :pipedrive_app do
     get "prendre-rdv", action: :rdv_plan, as: :pipedrive_rdv_plan
     post "autoriser", action: :authorize, as: :pipedrive_authorize
