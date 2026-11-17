@@ -16,6 +16,8 @@ module Pipedrive
       raise InvalidToken, e.message
     end
 
+    def installation_url(redirect_uri:) = "#{OAUTH_URL}/oauth/authorize?#{{ client_id:, redirect_uri: }.to_query}"
+
     # The bridge keeps using the account's API token: the tokens are only fetched to complete the installation
     def complete_installation(code:, redirect_uri:)
       response = oauth.post("/oauth/token", { grant_type: "authorization_code", code:, redirect_uri: })

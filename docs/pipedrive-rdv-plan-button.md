@@ -16,6 +16,9 @@ A **private app** in Pipedrive's Developer Hub, with one link action:
   empty: Pipedrive then signs with the app's client secret (a dedicated secret was reported ignored);
 - OAuth callback `<BRIDGE_BASE_URL>/pipedrive/app/callback`, the smallest scope. The callback exchanges the code to
   complete the installation and forgets the tokens: the bridge keeps using the account's API token.
+- The app is live and unlisted. Pipedrive installs apps per user: each user who will take RDVs opens the installation
+  link once. `<BRIDGE_BASE_URL>/integrations/pipedrive` redirects to it (Pipedrive's authorize URL with the client id
+  and the callback), and the account's page shows it to copy.
 
 Configuration: `PIPEDRIVE_APP_CLIENT_ID`, `PIPEDRIVE_APP_CLIENT_SECRET`; the routes answer 404 without them or without
 RDV-SP's.
