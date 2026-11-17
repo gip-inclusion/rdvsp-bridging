@@ -1,0 +1,43 @@
+<%# locals: (account:) %>
+<div class="c-box mb-3 mb-md-4">
+  <h2 class="h3">Accès partenaire</h2>
+  <p class="fs-sm text-muted">
+    Un lien ouvre ce compte, et lui seul, sans mot de passe, jusqu’à ce que vous le révoquiez. Le partenaire n’y voit
+    ni ce bloc, ni « Reconstruire », ni les actions sur les RDV ignorés.
+  </p>
+  <%= form_with url: admin_account_partner_links_path(account), class: "d-flex flex-column flex-sm-row gap-2 mb-3" do |f| %>
+    <%= f.label :label, "Pour qui ?", class: "visually-hidden" %>
+    <%= f.text_field :label, class: "form-control", required: true, placeholder: "Pour qui ? (ex. : Paul, Massajobs)" %>
+    <%= f.submit "Créer un lien", class: "btn btn-primary flex-shrink-0" %>
+  <% end %>
+  <% links = account.partner_links.order(created_at: :desc) %>
+  <% if links.any? %>
+    <ul class="list-group list-group-flush pont-rows">
+      <% links.each do |link| %>
+        <li class="list-group-item px-0">
+          <div class="d-flex gap-2 justify-content-between align-items-start">
+            <div class="text-break">
+              <strong><%= link.label %></strong>
+              <div class="fs-sm text-muted">créé le <%= paris_time(link.created_at) %> · <%= partner_link_uses(link) %></div>
+            </div>
+            <% if link.active? %>
+              <%= button_to admin_account_partner_link_path(account, link), method: :delete,
+                            class: "btn btn-outline-danger btn-sm btn-ico flex-shrink-0",
+                            form: { onsubmit: "return confirm('Révoquer ce lien ?')" } do %>
+                <i class="ri-close-circle-line" aria-hidden="true"></i><span>Révoquer</span>
+              <% end %>
+            <% else %>
+              <div class="flex-shrink-0"><%= badge("Révoqué le #{paris_time(link.revoked_at)}", :neutral) %></div>
+            <% end %>
+          </div>
+          <% if link.active? %>
+            <div class="mt-2">
+              <%= copy_field "partner-link-#{link.id}",
+                             "#{Rails.configuration.x.base_url}#{partner_link_path(link.generate_token_for(:partner_access))}" %>
+            </div>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</div>

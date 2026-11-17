@@ -47,6 +47,7 @@ Rails.application.routes.draw do
       resource :rdvsp_organisation, only: %i[edit update]
       resource :rdv_activity_type, only: %i[edit update]
       resources :usager_imports, only: %i[new create]
+      resources :partner_links, only: %i[create destroy]
     end
     resources :connections, only: %i[show update] do
       post :reset_password, on: :member

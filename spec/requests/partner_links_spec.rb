@@ -120,6 +120,51 @@ RSpec.describe "Partner links: one account's admin without the password" do
     end
   end
 
+  describe "the team's block" do
+    let(:account_path) { "/admin/accounts/#{account.id}" }
+
+    it "creates links, shows how often they served, and revokes them" do
+      post "#{account_path}/partner_links", params: { label: "  Paul  " }, headers: team
+      expect(response).to redirect_to(account_path)
+      created = account.partner_links.sole
+      expect(created.label).to eq("Paul")
+      url = "#{Rails.configuration.x.base_url}/equipe/#{created.generate_token_for(:partner_access)}"
+
+      get account_path, headers: team
+      expect(response.body).to include("Accès partenaire", "Paul", "jamais ouvert", url)
+
+      2.times { created.record_use! }
+      get account_path, headers: team
+      expect(response.body).to include("ouvert 2 fois, la dernière le")
+
+      delete "#{account_path}/partner_links/#{created.id}", headers: team
+      expect(created.reload.revoked_at).to be_present
+      get account_path, headers: team
+      expect(response.body).to include("Révoqué le").and not_include(url)
+    end
+
+    it "asks whom a link is for" do
+      post "#{account_path}/partner_links", params: { label: " " }, headers: team
+
+      expect(flash[:alert]).to include("pour qui")
+      expect(account.partner_links).to be_empty
+    end
+
+    it "stays the team's" do
+      open_link
+
+      get account_path, headers: browser
+      expect(response.body).not_to include("Accès partenaire")
+
+      post "#{account_path}/partner_links", params: { label: "Moi" }, headers: browser
+      expect(response).to have_http_status(:not_found)
+      delete "#{account_path}/partner_links/#{link.id}", headers: browser
+      expect(response).to have_http_status(:not_found)
+      expect(link.reload).to be_active
+      expect(account.partner_links.count).to eq(1)
+    end
+  end
+
   it "leaves the team's password as it was without a partner session" do
     get "/admin/accounts/#{account.id}", headers: browser
     expect(response).to have_http_status(:unauthorized)
