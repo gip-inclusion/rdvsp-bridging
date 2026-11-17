@@ -12,6 +12,7 @@ class Account < ApplicationRecord
            class_name: "RdvspAuthorization", dependent: :destroy, inverse_of: :account
   has_many :imported_usagers, dependent: :delete_all
   has_many :usager_imports, dependent: :delete_all
+  has_many :partner_links, dependent: :delete_all
 
   validates :provider, inclusion: { in: PROVIDERS }
   validates :name, :api_token, presence: true
