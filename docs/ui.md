@@ -48,7 +48,9 @@ Marianne, Remix Icon), which les-emplois vendors from a release tag.
   - Pipedrive: domain, activity type **by name** (with "Changer"; `rdv_activity_type_name` is set by onboarding and by
     the activity type page, so accounts onboarded before show the key until the type is chosen again), live updates
     (webhook);
-  - Options: switches with their help text under the label, the alert e-mail, "Enregistrer".
+  - Options: switches with their help text under the label, the alert e-mail, "Enregistrer";
+  - Accès partenaire (team only): a "Pour qui ?" field and "Créer un lien", then the links, newest first, with their
+    uses, the URL to copy and "Révoquer", or "Révoqué le …" (`docs/partner-links.md`).
 - **Connexion**:
   - État: four figures (last RDV-SP visit, last rebuild, busy times, failed RDVs) and "Reconstruire";
   - RDV reçus: counts as badges, the note on ignored RDVs in an info alert with "Ignorer les RDV reçus avant…", then

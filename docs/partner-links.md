@@ -19,13 +19,14 @@ the team sees whether and how often it served, and revokes it.
 
 ## Opening a link
 
-1. `GET /equipe/<token>`, public layout: "Administrer « <account> » dans Pont RDV" and a "Continuer" button. A link
-   preview (mail, chat) only reaches this page, so it neither counts nor opens anything.
+1. `GET /equipe/<token>`, public layout: "Administrer « <account> »", what the page allows, and a "Continuer" button.
+   A link preview (mail, chat) only reaches this page, so it neither counts nor opens anything.
 2. `POST /equipe/<token>`: counts a use (`uses_count + 1`, `last_used_at`), resets the session, stores the link's id in
    it, redirects to the account's page.
 3. Each request reloads the link from the session: revoked (or deleted with its account), the session is dropped and
    the page says to ask the team for a new link.
-4. An unknown or revoked token renders the same message (404). Logs carry the link's id only.
+4. An unknown or revoked token renders the same message (404). The bridge's own log lines carry ids only; the request
+   line shows the path with its token, as for the agents' links.
 
 The session ends with the browser (Rails' cookie store, no expiry set); the partner opens the link again, which
 counts another use. "Quitter" in the header (`DELETE /equipe`) clears the session, so the team can test a link and go
