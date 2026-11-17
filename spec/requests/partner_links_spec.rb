@@ -89,6 +89,17 @@ RSpec.describe "Partner links: one account's admin without the password" do
       expect(response).to redirect_to("/admin/accounts/#{account.id}")
     end
 
+    it "sees neither the team's navigation nor its troubleshooting actions" do
+      create(:rdv, connection:, ignored_at: Time.current)
+
+      get "/admin/accounts/#{account.id}", headers: browser
+      expect(response.body).to include("Quitter").and not_include(">Comptes<")
+
+      get "/admin/connections/#{connection.id}", headers: browser
+      expect(response.body).to include("Massajobs", "Identifiants CalDAV")
+        .and not_include("Reconstruire", "Ignorer les RDV reçus avant", "Transmettre quand même")
+    end
+
     it "ends when the link is revoked" do
       link.revoke!
 
@@ -115,5 +126,11 @@ RSpec.describe "Partner links: one account's admin without the password" do
 
     get "/admin/accounts/#{account.id}", headers: team
     expect(response).to have_http_status(:ok)
+    expect(response.body).to include(">Comptes<").and not_include("Quitter")
+
+    connection = create(:connection, account:)
+    create(:rdv, connection:, ignored_at: Time.current)
+    get "/admin/connections/#{connection.id}", headers: team
+    expect(response.body).to include("Reconstruire", "Ignorer les RDV reçus avant", "Transmettre quand même")
   end
 end
