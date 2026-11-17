@@ -19,12 +19,13 @@ RSpec.describe "Admin: RDV-SP usager import", :rdvsp do
 
     get "/admin/accounts/#{account.id}", headers: headers
 
-    expect(response.body).not_to include("RDV Service Public")
+    expect(response.body).not_to include("Intégration Pipedrive")
   end
 
   it "gives the authorization link to send, then who authorized and the imports" do
     get "/admin/accounts/#{account.id}", headers: headers
-    expect(response.body).to include("Aucun agent", "#{Rails.configuration.x.base_url}/rdvsp/authorize/")
+    expect(response.body).to include("Intégration Pipedrive", "Aucun agent",
+                                     "#{Rails.configuration.x.base_url}/rdvsp/authorize/", "prendre-rdv-pipedrive")
 
     create(:rdvsp_authorization, account:, agent_email: "paul@example.fr")
     create(:usager_import, account:, state: "done", counts: { "created" => 12, "rejected" => 1 })
