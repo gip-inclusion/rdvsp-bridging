@@ -1,7 +1,9 @@
 # The RDV-SP organisation where the "Prendre RDV" button creates the persons not transferred yet
 class Admin::RdvspOrganisationsController < Admin::BaseController
+  open_to_partners
+
   before_action do
-    @account = Account.find(params.expect(:account_id))
+    @account = accounts.find(params.expect(:account_id))
     redirect_to admin_account_path(@account), alert: "Aucun agent n’a autorisé la passerelle." unless authorization
   end
 

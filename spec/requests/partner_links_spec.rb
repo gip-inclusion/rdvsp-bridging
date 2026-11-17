@@ -38,4 +38,82 @@ RSpec.describe "Partner links: one account's admin without the password" do
       expect(link.reload.uses_count).to eq(0)
     end
   end
+
+  describe "a partner's session" do
+    let(:connection) { create(:connection, account:) }
+    let(:other) { create(:account) }
+    let(:other_connection) { create(:connection, account: other) }
+
+    before { open_link }
+
+    it "reaches their account's pages without the password" do
+      get "/admin/accounts/#{account.id}", headers: browser
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Massajobs")
+
+      patch "/admin/accounts/#{account.id}", params: { account: { link_persons: "1" } }, headers: browser
+      expect(account.reload.link_persons).to be(true)
+
+      get "/admin/connections/#{connection.id}", headers: browser
+      expect(response).to have_http_status(:ok)
+    end
+
+    it "reaches no other account, nor the team's pages" do
+      ["/admin/accounts/#{other.id}", "/admin/connections/#{other_connection.id}",
+       "/admin/accounts/#{other.id}/connections/new", "/admin/accounts/#{other.id}/rdv_activity_type/edit",
+       "/admin/accounts/new", "/admin/google/connect",
+       "/admin/connections/#{connection.id}/ignored_rdvs/new",].each do |path|
+        get path, headers: browser
+        expect(response).to have_http_status(:not_found), path
+      end
+
+      patch "/admin/accounts/#{other.id}", params: { account: { link_persons: "1" } }, headers: browser
+      expect(response).to have_http_status(:not_found)
+      expect(other.reload.link_persons).to be(false)
+    end
+
+    it "can't use the team's troubleshooting actions" do
+      rdv = create(:rdv, connection:, ignored_at: Time.current)
+
+      post "/admin/connections/#{connection.id}/rebuild", headers: browser
+      expect(response).to have_http_status(:not_found)
+
+      post "/admin/rdvs/#{rdv.id}/release", headers: browser
+      expect(response).to have_http_status(:not_found)
+      expect(rdv.reload.ignored_at).to be_present
+    end
+
+    it "goes to their account from the accounts list" do
+      get "/admin", headers: browser
+
+      expect(response).to redirect_to("/admin/accounts/#{account.id}")
+    end
+
+    it "ends when the link is revoked" do
+      link.revoke!
+
+      get "/admin/accounts/#{account.id}", headers: browser
+      expect(response).to have_http_status(:not_found)
+      expect(response.body).to include("plus valable")
+
+      get "/admin/accounts/#{account.id}", headers: browser
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it "ends when they leave" do
+      delete "/equipe", headers: browser
+      expect(response.body).to include("quitté")
+
+      get "/admin/accounts/#{account.id}", headers: browser
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
+
+  it "leaves the team's password as it was without a partner session" do
+    get "/admin/accounts/#{account.id}", headers: browser
+    expect(response).to have_http_status(:unauthorized)
+
+    get "/admin/accounts/#{account.id}", headers: team
+    expect(response).to have_http_status(:ok)
+  end
 end

@@ -1,7 +1,9 @@
 # Importing a partner's Pipedrive beneficiaries as usagers of an RDV-SP organisation, with a preview
 class Admin::UsagerImportsController < Admin::BaseController
+  open_to_partners
+
   before_action do
-    @account = Account.find(params.expect(:account_id))
+    @account = accounts.find(params.expect(:account_id))
     @authorization = @account.rdvsp_authorization
     redirect_to admin_account_path(@account), alert: "Aucun agent n’a autorisé la passerelle." unless @authorization
   end

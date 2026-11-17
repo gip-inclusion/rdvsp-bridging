@@ -1,19 +1,21 @@
 class Admin::ConnectionsController < Admin::BaseController
+  open_to_partners except: :rebuild
+
   def show
-    @connection = Connection.find(params.expect(:id))
+    @connection = connections.find(params.expect(:id))
     @password = flash[:password]
     @rdvs = @connection.rdvs.order(created_at: :desc).limit(50)
   end
 
   def new
-    @account = Account.find(params.expect(:account_id))
+    @account = accounts.find(params.expect(:account_id))
     @users = Pipedrive::Client.new(@account.api_token).users.select { it["active_flag"] }
   rescue Pipedrive::Error => e
     redirect_to admin_account_path(@account), alert: "Utilisateurs Pipedrive indisponibles : #{e.message}"
   end
 
   def create
-    account = Account.find(params.expect(:account_id))
+    account = accounts.find(params.expect(:account_id))
     result = Connections::Create.call(account:, provider_user_id: params[:provider_user_id],
                                       agent_email: params[:agent_email])
     if result.success?
@@ -24,14 +26,14 @@ class Admin::ConnectionsController < Admin::BaseController
   end
 
   def update
-    connection = Connection.find(params.expect(:id))
+    connection = connections.find(params.expect(:id))
     connection.update!(params.expect(connection: %i[agent_email include_all_day]))
     RebuildConnectionJob.perform_later(connection)
     redirect_to admin_connection_path(connection), notice: "Options enregistrées."
   end
 
   def reset_password
-    connection = Connection.find(params.expect(:id))
+    connection = connections.find(params.expect(:id))
     password = Connection.generate_password
     connection.update!(password:)
     redirect_to admin_connection_path(connection), flash: { password: }
@@ -39,13 +41,13 @@ class Admin::ConnectionsController < Admin::BaseController
 
   # A new link for the agent to get their credentials; the previous one stops working
   def caldav_link
-    connection = Connection.find(params.expect(:id))
+    connection = connections.find(params.expect(:id))
     connection.start_caldav_link!
     redirect_to admin_connection_path(connection), notice: "Lien créé : copiez-le pour l’envoyer à l’agent."
   end
 
   def rebuild
-    connection = Connection.find(params.expect(:id))
+    connection = connections.find(params.expect(:id))
     RebuildConnectionJob.perform_later(connection)
     redirect_to admin_connection_path(connection), notice: "Reconstruction lancée."
   end
