@@ -240,3 +240,8 @@ Newest decisions at the bottom of each section. **(you)** = decided by Louis-Jea
     click (OAuth through the same callback, then straight to the plan), because RDV-SP lets only the agent whose token
     created an RDV plan open it. The account's authorization stays the import's. A usager transferred by a click is
     created in that agent's name (`docs/pipedrive-rdv-plan-button.md`).
+44. **(you → me)** A partner's admin manages their account through a link the team creates and sends
+    (`/equipe/<token>`), without a password: it opens that account's pages only, until revoked (no expiry). Each link
+    has a label, counts its uses (a "Continuer" click, so link previews don't count) and shows its last one. The
+    troubleshooting actions (rebuild, ignore RDVs received before, release an ignored RDV) stay the team's
+    (`docs/partner-links.md`).
