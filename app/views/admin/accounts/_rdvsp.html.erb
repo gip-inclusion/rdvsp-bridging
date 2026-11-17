@@ -65,7 +65,16 @@
   <% end %>
 
   <h3 class="h5 mt-4">Bouton « Prendre RDV »</h3>
-  <p class="fs-sm text-muted">Chaque agent autorise Pont RDV à son premier clic, pour agir en son nom.</p>
+  <% if Pipedrive::App.configured? %>
+    <label class="form-label" for="pipedrive-installation-link">
+      Lien d’installation à envoyer aux utilisateurs Pipedrive du partenaire
+      <span class="text-muted">(chacun l’ouvre une fois)</span>
+    </label>
+    <div class="mb-3">
+      <%= copy_field "pipedrive-installation-link", "#{Rails.configuration.x.base_url}#{pipedrive_installation_path}" %>
+    </div>
+  <% end %>
+  <p class="fs-sm text-muted">Chaque agent autorise ensuite Pont RDV à son premier clic, pour agir en son nom.</p>
   <details class="mb-3">
     <summary class="fs-sm fw-bold">Où trouver le bouton dans Pipedrive</summary>
     <p class="fs-sm text-muted mt-2">Sur la fiche d’une personne : menu « … » en haut à droite, puis « Prendre RDV ».</p>

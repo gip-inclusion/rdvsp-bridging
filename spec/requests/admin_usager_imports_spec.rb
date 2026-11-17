@@ -33,6 +33,12 @@ RSpec.describe "Admin: RDV-SP usager import", :rdvsp do
     expect(response.body).to include("paul@example.fr", "Importer des bénéficiaires", "12 créés", "1 refusé")
   end
 
+  it "gives the Pipedrive app's installation link once the app is configured", :pipedrive_app do
+    get "/admin/accounts/#{account.id}", headers: headers
+
+    expect(response.body).to include("#{Rails.configuration.x.base_url}/integrations/pipedrive")
+  end
+
   it "previews an import with counts only" do
     create(:rdvsp_authorization, account:)
     stub_rdvsp_organisations([{ id: 42, name: "Association Exemple Paris" }])
