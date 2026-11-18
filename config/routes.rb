@@ -28,6 +28,7 @@ Rails.application.routes.draw do
     get "retour/:token", action: :back, as: :pipedrive_back, constraints: { token: %r{[^/]+} }
     get "app/callback", action: :callback, as: :pipedrive_app_callback
   end
+  get "integrations/pipedrive" => "pipedrive_app#install", as: :pipedrive_installation
 
   namespace :admin do
     root "accounts#index"

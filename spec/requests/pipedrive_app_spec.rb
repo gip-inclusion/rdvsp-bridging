@@ -179,11 +179,20 @@ RSpec.describe "Pipedrive app: the Prendre RDV button and the installation", :pi
     ENV.delete("PIPEDRIVE_APP_CLIENT_SECRET")
 
     click
+    expect(response).to have_http_status(:not_found)
 
+    get "/integrations/pipedrive", headers: browser
     expect(response).to have_http_status(:not_found)
   end
 
   describe "installation" do
+    it "starts it from a short address" do
+      get "/integrations/pipedrive", headers: browser
+
+      expect(response).to redirect_to("https://oauth.pipedrive.com/oauth/authorize?" \
+                                      "client_id=#{PipedriveHelpers::APP_CLIENT_ID}&redirect_uri=#{CGI.escape(callback_url)}")
+    end
+
     it "completes it with the code Pipedrive sends back" do
       exchange = stub_request(:post, "https://oauth.pipedrive.com/oauth/token")
         .with(body: hash_including(code: "abc", redirect_uri: callback_url)).to_return_json(body: {})

@@ -79,6 +79,11 @@ class PipedriveAppController < ApplicationController
     redirect_to url, allow_other_host: true
   end
 
+  # A short address to send partners: each Pipedrive user who will take RDVs opens it once
+  def install
+    redirect_to Pipedrive::App.installation_url(redirect_uri: callback_url), allow_other_host: true
+  end
+
   def callback
     if params[:error].present?
       return message("Pont RDV n’a pas été installé", "Rien n’a été modifié dans Pipedrive.")
