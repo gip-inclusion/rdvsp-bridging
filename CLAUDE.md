@@ -60,6 +60,9 @@ Exact requests, verified by reading the gem and RDV-SP code (`production` branch
   Pipedrive app (`RdvPlans::Start`, `PipedriveAppController`, `docs/pipedrive-rdv-plan-button.md`).
 - Pages: the itou theme, vendored in `vendor/assets/itou-theme` (`bin/update-itou-theme VERSION`), with
   `app/assets/stylesheets/pont-rdv.css` and `AdminHelper` on top (`docs/ui.md`).
+- Admin: HTTP Basic for the team, or a `PartnerLink` session limited to one account (`/equipe/<token>`): admin
+  controllers are closed to partners unless they call `open_to_partners`, and look records up through `accounts` /
+  `connections` (`docs/partner-links.md`).
 - `Providers` dispatches by convention to `<Provider>::RefreshAccount`, `RebuildConnection`, `PushRdv`;
   `RdvContent` holds the provider-agnostic rules about what an RDV may reveal.
 

@@ -15,8 +15,14 @@
           <span><span class="pont-brand__name">Pont RDV</span><span class="pont-brand__tag">Administration</span></span>
         <% end %>
         <nav class="pont-header__nav" aria-label="Navigation principale">
-          <%= link_to admin_root_path, class: "btn btn-outline-primary btn-ico bg-white" do %>
-            <i class="ri-building-line" aria-hidden="true"></i><span class="d-none d-sm-inline">Comptes</span>
+          <% if partner_link %>
+            <%= button_to partner_session_path, method: :delete, class: "btn btn-outline-primary btn-ico bg-white" do %>
+              <i class="ri-logout-box-r-line" aria-hidden="true"></i><span class="d-none d-sm-inline">Quitter</span>
+            <% end %>
+          <% else %>
+            <%= link_to admin_root_path, class: "btn btn-outline-primary btn-ico bg-white" do %>
+              <i class="ri-building-line" aria-hidden="true"></i><span class="d-none d-sm-inline">Comptes</span>
+            <% end %>
           <% end %>
         </nav>
       </div>

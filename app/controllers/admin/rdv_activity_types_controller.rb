@@ -1,7 +1,9 @@
 # The Pipedrive activity type of the RDVs the bridge writes: its own by default, or one the partner already uses
 class Admin::RdvActivityTypesController < Admin::BaseController
+  open_to_partners
+
   before_action do
-    @account = Account.find(params.expect(:account_id))
+    @account = accounts.find(params.expect(:account_id))
     head :not_found unless @account.provider == "pipedrive"
   end
 

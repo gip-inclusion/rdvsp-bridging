@@ -7,7 +7,7 @@
   <% end %>
 <% end %>
 <% read = @account.refreshed_at ? "lu il y a #{time_ago_in_words(@account.refreshed_at)}" : "jamais lu" %>
-<%= render "admin/title", title: @account.name, back: ["Comptes", admin_root_path],
+<%= render "admin/title", title: @account.name, back: (["Comptes", admin_root_path] unless partner_link),
                           badge: account_badge(@account, size: :base), subtitle: "#{account_source(@account)} · #{read}",
                           cta: %>
 
@@ -40,6 +40,7 @@
           <% end %>
         </div>
         <%= render "admin/accounts/rdvsp", account: @account if Rdvsp::Oauth.configured? %>
+        <%= render "admin/accounts/partner_links", account: @account unless partner_link %>
       </div>
 
       <div class="s-section__col col-12 col-xl-4">

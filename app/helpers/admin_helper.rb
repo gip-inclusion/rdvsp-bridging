@@ -14,6 +14,13 @@ module AdminHelper
   # "0 ignoré", "1 ignoré", "3 ignorés"
   def count_label(count, singular, plural = "#{singular}s") = "#{count} #{count > 1 ? plural : singular}"
 
+  # "jamais ouvert", "ouvert 2 fois, la dernière le …"
+  def partner_link_uses(link)
+    return "jamais ouvert" if link.uses_count.zero?
+
+    "ouvert #{count_label(link.uses_count, 'fois', 'fois')}, la dernière le #{paris_time(link.last_used_at)}"
+  end
+
   def account_source(account)
     return account.provider.capitalize unless account.provider == "pipedrive"
 
