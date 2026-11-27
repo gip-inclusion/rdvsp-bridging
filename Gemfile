@@ -25,7 +25,7 @@ gem "good_job", "~> 4.24"
 gem "faraday", "~> 2.15"
 gem "faraday-retry", "~> 2.3"
 # iCalendar parsing and generation
-gem "icalendar", "~> 2.11"
+gem "icalendar", "~> 2.14"
 # CalDAV password digests from before SHA-256, upgraded on the next login
 gem "bcrypt", "~> 3.1"
 # OpenStruct results in BaseService (no longer a default gem)
